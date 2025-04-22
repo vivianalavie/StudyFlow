@@ -1,5 +1,5 @@
 package main;
-
+/*
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -24,3 +24,57 @@ import java.net.http.HttpResponse;
 	        System.out.println("Antwort von Supabase:\n" + response.body());
 	    }
 	}
+*/
+/*
+import auth.AuthService;
+import models.AuthResponse;
+
+public class main {
+    public static void main(String[] args) {
+        AuthService authService = new AuthService();
+
+        AuthResponse response = authService.register("maurice.pestka@gmail.com", "testpass123");
+        if (response != null) {
+            System.out.println("User ID: " + response.id);
+            System.out.println("Access Token: " + response.email);
+        } else {
+            System.out.println("Fehler bei der Registrierung.");
+        }
+    }
+}
+*/
+
+
+import auth.AuthService;
+import models.AuthResponse;
+import models.LoginResponse;
+
+public class main {
+    public static void main(String[] args) {
+        AuthService authService = new AuthService();
+
+        // Registrierung
+        AuthResponse response = authService.register("maurice.pestka@gmail.com", "testpass123");
+        if (response != null) {
+            System.out.println("User ID: " + response.id);
+            System.out.println("E-Mail: " + response.email);
+        } else {
+            System.out.println("❌Fehler bei der Registrierung.");
+        }
+
+        // Login
+        LoginResponse loginResponse = authService.login("maurice.pestka@gmail.com", "testpass123");
+        if (loginResponse != null && loginResponse.access_token != null) {
+            System.out.println("✅ Login erfolgreich! Token: " + loginResponse.access_token);
+            System.out.println("User: " + loginResponse.user.email);
+        } else {
+            System.out.println("❌ Login fehlgeschlagen.");
+        }
+    }
+}
+
+
+
+
+
+
