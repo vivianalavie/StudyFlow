@@ -1,8 +1,8 @@
-package auth;
+package com.studyflow.service.auth;
 
-import utils.HttpClientHelper;
-import models.AuthResponse;
-import models.LoginResponse;
+import com.studyflow.utils.HttpClientHelper;
+import com.studyflow.models.AuthResponse;
+import com.studyflow.models.LoginResponse;
 
 public class AuthService {
     private final String API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoaHppbWFiaXprdHNybXd3a29oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1NjA0MDQsImV4cCI6MjA2MDEzNjQwNH0.p7n4TUvkms3wGOuf0QYJQba0kvtKGArDMR4pV6QNHWM";
