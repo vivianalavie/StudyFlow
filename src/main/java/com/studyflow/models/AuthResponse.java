@@ -1,8 +1,5 @@
-package models;
+package com.studyflow.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class AuthResponse {
     public String id;
     public String email;

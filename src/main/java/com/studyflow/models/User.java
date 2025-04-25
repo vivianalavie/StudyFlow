@@ -1,4 +1,4 @@
-package models;
+package com.studyflow.models;
 
 public class User {
     public String id;
