@@ -1,4 +1,4 @@
-package com.studyflow.models;
+package com.studyflow.model;
 
 public record AuthResponse (
     String id,
