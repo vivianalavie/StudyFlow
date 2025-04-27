@@ -1,8 +1,8 @@
 package com.studyflow;
 
 import com.studyflow.service.auth.AuthService;
-import com.studyflow.models.AuthResponse;
-import com.studyflow.models.LoginResponse;
+import com.studyflow.model.AuthResponse;
+import com.studyflow.model.LoginResponse;
 
 public class Main {
     public static void main(String[] args) {
