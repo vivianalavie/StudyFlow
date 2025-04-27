@@ -11,8 +11,8 @@ public class Main {
         // Registrierung
         AuthResponse response = authService.register("maurice.pestka@gmail.com", "testpass123");
         if (response != null) {
-            System.out.println("User ID: " + response.id);
-            System.out.println("E-Mail: " + response.email);
+            System.out.println("User ID: " + response.id());
+            System.out.println("E-Mail: " + response.email());
         } else {
             System.out.println("❌Fehler bei der Registrierung.");
         }
