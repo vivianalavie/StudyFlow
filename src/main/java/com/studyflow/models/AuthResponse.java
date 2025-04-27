@@ -1,10 +1,10 @@
 package com.studyflow.models;
 
-public class AuthResponse {
-    public String id;
-    public String email;
-    public String created_at;
-    public String updated_at;
-    public boolean is_anonymous;
-    public String access_token;
-}
+public record AuthResponse (
+    String id,
+    String email,
+    String created_at,
+    String updated_at,
+    boolean is_anonymous,
+    String access_token
+) {}
