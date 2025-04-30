@@ -1,93 +1,72 @@
 package com.studyflow.repository;
 
+import com.studyflow.exception.AuthServiceException;
 import com.studyflow.model.auth.AuthResponse;
 import com.studyflow.model.auth.UserCredentialsModel;
 import com.google.gson.Gson;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.util.Objects;
 
 public class SupabaseUserRepository implements UserRepository{
 
-    private static final String SUPABASE_URL = "https://rhhzimabizktsrmwwkoh.supabase.co/auth/v1/signup";
-    private static final String API_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJoaHppbWFiaXprdHNybXd3a29oIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ1NjA0MDQsImV4cCI6MjA2MDEzNjQwNH0.p7n4TUvkms3wGOuf0QYJQba0kvtKGArDMR4pV6QNHWM";
-
-    private static final Gson gson = new Gson();
-    private final OkHttpClient client = new OkHttpClient();
-
+    private static final String BASE_URL = "https://rhhzimabizktsrmwwkoh.supabase.co/auth/v1";
+    private static final String API_KEY = System.getenv("SUPABASE_API_KEY");
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
+    private final OkHttpClient client;
+    private final Gson gson;
+
+    public SupabaseUserRepository() {
+        this.client = new OkHttpClient();
+        this.gson = new Gson();
+    }
+
     @Override
-    public AuthResponse save(UserCredentialsModel user) {
-        try {
-            String jsonBody = gson.toJson(user);
+    public AuthResponse signup(UserCredentialsModel user) {
+        return sendAuthRequest("/signup", user);
+    }
 
-            Request request = new Request.Builder()
-                    .url(SUPABASE_URL)
-                    .addHeader("apikey", API_KEY)
-                    .addHeader("Authorization", "Bearer " + API_KEY)
-                    .addHeader("Content-Type", "application/json")
-                    .post(RequestBody.create(jsonBody, JSON))
-                    .build();
+    @Override
+    public AuthResponse login(UserCredentialsModel user) {
+        return sendAuthRequest("/token?grant_type=password", user);
+    }
 
-            Response response = client.newCall(request).execute();
+    private AuthResponse sendAuthRequest(String endpoint, UserCredentialsModel user) {
+        String jsonBody = gson.toJson(user);
+        Request request = buildRequest(BASE_URL + endpoint, jsonBody);
 
-            if (!response.isSuccessful()) {
-                String errorBody = response.body() != null ? response.body().string() : "No error body";
-                throw new RuntimeException("Failed to save user: " + response.code() + " - " + errorBody);
-            }
-
-            if (response.body() != null) {
-                String responseBodyString = response.body().string();
-                System.out.println(responseBodyString);
-                return gson.fromJson(responseBodyString, AuthResponse.class);
-            } else {
-                throw new RuntimeException("Successful response but no body received.");
-            }
-
+        try (Response response = client.newCall(request).execute()) {
+            return handleResponse(response);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new AuthServiceException("Auth request failed", e);
         }
     }
 
-    public AuthResponse login(String email, String password) {
-        String loginUrl = "https://rhhzimabizktsrmwwkoh.supabase.co/auth/v1/token?grant_type=password";
-
-        // Baue das JSON-Body manuell
-        String jsonBody = gson.toJson(new UserCredentialsModel(email, password));
-
-        Request request = new Request.Builder()
-                .url(loginUrl)
-                .addHeader("apikey", API_KEY)
+    private Request buildRequest(String url, String jsonBody) {
+        return new Request.Builder()
+                .url(url)
+                .addHeader("apikey", Objects.requireNonNull(API_KEY, "API_KEY must not be null"))
                 .addHeader("Authorization", "Bearer " + API_KEY)
                 .addHeader("Content-Type", "application/json")
                 .post(RequestBody.create(jsonBody, JSON))
                 .build();
+    }
 
-        try (Response response = client.newCall(request).execute()) {
-            if (!response.isSuccessful()) {
-                throw new RuntimeException("Login failed: " + response.code() + " - " + response.body().string());
-            }
-
-            // Lese und parse den Body
-            String responseBody = response.body().string();
-            System.out.println("Login response: " + responseBody);
-
-            return gson.fromJson(responseBody, AuthResponse.class);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Login request failed", e);
+    private AuthResponse handleResponse(Response response) throws IOException {
+        if (!response.isSuccessful()) {
+            String errorBody = response.body() != null ? response.body().string() : "No error body";
+            throw new AuthServiceException("Request failed: " + response.code() + " - " + errorBody);
         }
+
+        if (response.body() == null) {
+            throw new AuthServiceException("Response body was null.");
+        }
+
+        String responseBody = response.body().string();
+        System.out.println("Auth response: " + responseBody);
+        return gson.fromJson(responseBody, AuthResponse.class);
     }
 
-
-    @Override
-    public UserCredentialsModel findById(String userId) {
-        return null;
-    }
-
-    @Override
-    public boolean existsByEmail(String email) {
-        return false;
-    }
 }

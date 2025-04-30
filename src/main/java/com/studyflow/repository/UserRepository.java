@@ -4,8 +4,6 @@ import com.studyflow.model.auth.AuthResponse;
 import com.studyflow.model.auth.UserCredentialsModel;
 
 public interface UserRepository {
-    AuthResponse save(UserCredentialsModel user);
-    UserCredentialsModel findById(String userId);
-    boolean existsByEmail(String email);
-    AuthResponse login(String email, String password);
+    AuthResponse signup(UserCredentialsModel user);
+    AuthResponse login(UserCredentialsModel user);
 }
