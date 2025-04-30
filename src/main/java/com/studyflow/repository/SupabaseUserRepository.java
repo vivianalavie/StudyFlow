@@ -1,5 +1,6 @@
 package com.studyflow.repository;
 
+import com.studyflow.model.LoginResponse;
 import com.studyflow.model.User;
 import com.google.gson.Gson;
 import okhttp3.*;
@@ -43,6 +44,37 @@ public class SupabaseUserRepository implements UserRepository{
             throw new RuntimeException(e);
         }
     }
+
+    public LoginResponse login(String email, String password) {
+        String loginUrl = "https://rhhzimabizktsrmwwkoh.supabase.co/auth/v1/token?grant_type=password";
+
+        // Baue das JSON-Body manuell
+        String jsonBody = gson.toJson(new User(email, password));
+
+        Request request = new Request.Builder()
+                .url(loginUrl)
+                .addHeader("apikey", API_KEY)
+                .addHeader("Authorization", "Bearer " + API_KEY)
+                .addHeader("Content-Type", "application/json")
+                .post(RequestBody.create(jsonBody, JSON))
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful()) {
+                throw new RuntimeException("Login failed: " + response.code() + " - " + response.body().string());
+            }
+
+            // Lese und parse den Body
+            String responseBody = response.body().string();
+            System.out.println("Login response: " + responseBody);
+
+            return gson.fromJson(responseBody, LoginResponse.class);
+
+        } catch (IOException e) {
+            throw new RuntimeException("Login request failed", e);
+        }
+    }
+
 
     @Override
     public User findById(String userId) {

@@ -19,15 +19,14 @@ public class Main {
 
         // Login
         LoginResponse loginResponse = authService.login("maurice.pestka@gmail.com", "testpass123");
-        if (loginResponse != null && loginResponse.access_token != null) {
-            System.out.println("✅ Login erfolgreich! Token: " + loginResponse.access_token);
-            System.out.println("User: " + loginResponse.user.email);
+        if (loginResponse != null && loginResponse.getAccess_token() != null) {
+            System.out.println("✅ Login erfolgreich! Token: " + loginResponse.getAccess_token());
+            System.out.println("User: " + loginResponse.getUser().getEmail());
         } else {
             System.out.println("❌ Login fehlgeschlagen.");
         }
     }
 }
-
 
 
 
