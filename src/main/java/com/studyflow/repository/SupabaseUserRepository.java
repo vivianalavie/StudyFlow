@@ -1,15 +1,19 @@
 package com.studyflow.repository;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.studyflow.exception.AuthServiceException;
 import com.studyflow.model.auth.AuthResponse;
+import com.studyflow.model.auth.AuthenticatedUser;
 import com.studyflow.model.auth.UserCredentialsModel;
-import com.google.gson.Gson;
 import okhttp3.*;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 
-public class SupabaseUserRepository implements UserRepository{
+public class SupabaseUserRepository implements UserRepository {
 
     private static final String BASE_URL = "https://rhhzimabizktsrmwwkoh.supabase.co/auth/v1";
     private static final String API_KEY = System.getenv("SUPABASE_API_KEY");
@@ -25,48 +29,105 @@ public class SupabaseUserRepository implements UserRepository{
 
     @Override
     public AuthResponse signup(UserCredentialsModel user) {
-        return sendAuthRequest("/signup", user);
+        return postToSupabase("/signup", user);
     }
 
     @Override
     public AuthResponse login(UserCredentialsModel user) {
-        return sendAuthRequest("/token?grant_type=password", user);
+        return postToSupabase("/token?grant_type=password", user);
     }
 
-    private AuthResponse sendAuthRequest(String endpoint, UserCredentialsModel user) {
-        String jsonBody = gson.toJson(user);
-        Request request = buildRequest(BASE_URL + endpoint, jsonBody);
+    @Override
+    public AuthResponse logout() {
+        // Supabase logout is handled client-side (token invalidation not supported server-side)
+        throw new UnsupportedOperationException("Logout is handled client-side in Supabase.");
+    }
 
-        try (Response response = client.newCall(request).execute()) {
-            return handleResponse(response);
-        } catch (IOException e) {
-            throw new AuthServiceException("Auth request failed", e);
+    @Override
+    public Optional<AuthenticatedUser> getAuthenticatedUser(UserCredentialsModel user) {
+        try {
+            String token = fetchAccessToken(user);
+            return fetchUserProfile(token);
+        } catch (IOException | AuthServiceException e) {
+            return Optional.empty();
         }
     }
 
-    private Request buildRequest(String url, String jsonBody) {
-        return new Request.Builder()
-                .url(url)
+    // ---------- Internal Helpers ----------
+
+    private AuthResponse postToSupabase(String endpoint, UserCredentialsModel user) {
+        Request request = new Request.Builder()
+                .url(BASE_URL + endpoint)
                 .addHeader("apikey", Objects.requireNonNull(API_KEY, "API_KEY must not be null"))
                 .addHeader("Authorization", "Bearer " + API_KEY)
                 .addHeader("Content-Type", "application/json")
-                .post(RequestBody.create(jsonBody, JSON))
+                .post(RequestBody.create(gson.toJson(user), JSON))
                 .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            return parseAuthResponse(response);
+        } catch (IOException e) {
+            throw new AuthServiceException("Request failed", e);
+        }
     }
 
-    private AuthResponse handleResponse(Response response) throws IOException {
+    private String fetchAccessToken(UserCredentialsModel user) throws IOException {
+        Request request = new Request.Builder()
+                .url(BASE_URL + "/token?grant_type=password")
+                .addHeader("apikey", API_KEY)
+                .addHeader("Authorization", "Bearer " + API_KEY)
+                .addHeader("Content-Type", "application/json")
+                .post(RequestBody.create(gson.toJson(user), JSON))
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                throw new AuthServiceException("Invalid credentials or no token returned.");
+            }
+
+            JsonObject json = gson.fromJson(response.body().string(), JsonObject.class);
+            return json.get("access_token").getAsString();
+        }
+    }
+
+    private Optional<AuthenticatedUser> fetchUserProfile(String accessToken) throws IOException {
+        Request request = new Request.Builder()
+                .url(BASE_URL + "/user")
+                .addHeader("Authorization", "Bearer " + accessToken)
+                .addHeader("apikey", API_KEY)
+                .get()
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (!response.isSuccessful() || response.body() == null) {
+                return Optional.empty();
+            }
+
+            JsonObject json = gson.fromJson(response.body().string(), JsonObject.class);
+            return Optional.of(parseUser(json));
+        }
+    }
+
+    private AuthResponse parseAuthResponse(Response response) throws IOException {
         if (!response.isSuccessful()) {
             String errorBody = response.body() != null ? response.body().string() : "No error body";
-            throw new AuthServiceException("Request failed: " + response.code() + " - " + errorBody);
+            throw new AuthServiceException("Supabase error: " + response.code() + " - " + errorBody);
         }
 
         if (response.body() == null) {
-            throw new AuthServiceException("Response body was null.");
+            throw new AuthServiceException("Response body is null.");
         }
 
-        String responseBody = response.body().string();
-        System.out.println("Auth response: " + responseBody);
-        return gson.fromJson(responseBody, AuthResponse.class);
+        return gson.fromJson(response.body().string(), AuthResponse.class);
     }
 
+    private AuthenticatedUser parseUser(JsonObject json) {
+        return new AuthenticatedUser(
+                json.get("id").getAsString(),
+                json.get("email").getAsString(),
+                json.get("role").getAsString(),
+                !json.get("email_confirmed_at").isJsonNull(),
+                Instant.parse(json.get("last_sign_in_at").getAsString())
+        );
+    }
 }
