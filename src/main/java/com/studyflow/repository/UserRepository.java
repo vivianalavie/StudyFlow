@@ -1,11 +1,11 @@
 package com.studyflow.repository;
 
-import com.studyflow.model.LoginResponse;
-import com.studyflow.model.User;
+import com.studyflow.model.auth.AuthResponse;
+import com.studyflow.model.auth.UserCredentialsModel;
 
 public interface UserRepository {
-    void save(User user);
-    User findById(String userId);
+    AuthResponse save(UserCredentialsModel user);
+    UserCredentialsModel findById(String userId);
     boolean existsByEmail(String email);
-    LoginResponse login(String email, String password);
+    AuthResponse login(String email, String password);
 }

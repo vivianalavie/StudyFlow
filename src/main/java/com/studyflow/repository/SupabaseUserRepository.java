@@ -1,7 +1,7 @@
 package com.studyflow.repository;
 
-import com.studyflow.model.LoginResponse;
-import com.studyflow.model.User;
+import com.studyflow.model.auth.AuthResponse;
+import com.studyflow.model.auth.UserCredentialsModel;
 import com.google.gson.Gson;
 import okhttp3.*;
 
@@ -18,7 +18,7 @@ public class SupabaseUserRepository implements UserRepository{
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     @Override
-    public void save(User user) {
+    public AuthResponse save(UserCredentialsModel user) {
         try {
             String jsonBody = gson.toJson(user);
 
@@ -30,26 +30,31 @@ public class SupabaseUserRepository implements UserRepository{
                     .post(RequestBody.create(jsonBody, JSON))
                     .build();
 
-            System.out.println("Body: " + jsonBody);
-
             Response response = client.newCall(request).execute();
 
             if (!response.isSuccessful()) {
-                throw new RuntimeException("Failed to save user: " + response.code() + " - " + response.body().string());
+                String errorBody = response.body() != null ? response.body().string() : "No error body";
+                throw new RuntimeException("Failed to save user: " + response.code() + " - " + errorBody);
             }
 
-            System.out.println("User saved successfully!");
+            if (response.body() != null) {
+                String responseBodyString = response.body().string();
+                System.out.println(responseBodyString);
+                return gson.fromJson(responseBodyString, AuthResponse.class);
+            } else {
+                throw new RuntimeException("Successful response but no body received.");
+            }
 
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public LoginResponse login(String email, String password) {
+    public AuthResponse login(String email, String password) {
         String loginUrl = "https://rhhzimabizktsrmwwkoh.supabase.co/auth/v1/token?grant_type=password";
 
         // Baue das JSON-Body manuell
-        String jsonBody = gson.toJson(new User(email, password));
+        String jsonBody = gson.toJson(new UserCredentialsModel(email, password));
 
         Request request = new Request.Builder()
                 .url(loginUrl)
@@ -68,7 +73,7 @@ public class SupabaseUserRepository implements UserRepository{
             String responseBody = response.body().string();
             System.out.println("Login response: " + responseBody);
 
-            return gson.fromJson(responseBody, LoginResponse.class);
+            return gson.fromJson(responseBody, AuthResponse.class);
 
         } catch (IOException e) {
             throw new RuntimeException("Login request failed", e);
@@ -77,7 +82,7 @@ public class SupabaseUserRepository implements UserRepository{
 
 
     @Override
-    public User findById(String userId) {
+    public UserCredentialsModel findById(String userId) {
         return null;
     }
 
