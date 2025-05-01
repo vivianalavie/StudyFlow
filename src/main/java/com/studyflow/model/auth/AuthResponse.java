@@ -6,10 +6,10 @@ record UserDetails (
 ) {}
 
 public record AuthResponse (
-    String access_token,
-    String token_type,
-    int expires_in,
-    int expires_at,
-    String refresh_token,
+    String accessToken,
+    String tokenType,
+    int expiresIn,
+    int expiresAt,
+    String refreshToken,
     UserDetails user
 ) { }
