@@ -15,9 +15,7 @@ public class AuthController {
 
     @Operation(summary = "Register a new user")
     @PostMapping("/register")
-    public AuthResponse register(@RequestBody UserCredentialsModel user) {
-        return userRepository.signup(user);
-    }
+    public AuthResponse register(@RequestBody UserCredentialsModel user) { return userRepository.signup(user); }
 
     @Operation(summary = "Login a user")
     @PostMapping("/login")
