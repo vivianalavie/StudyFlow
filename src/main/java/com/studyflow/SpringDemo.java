@@ -17,5 +17,6 @@ import java.util.*;
 public class SpringDemo {
     public static void main(String[] args) {
         SpringApplication.run(SpringDemo.class, args);
+        System.out.println("SUPABASE_API_KEY = " + System.getenv("SUPABASE_API_KEY"));
     }
 }
