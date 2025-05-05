@@ -12,10 +12,16 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.*;
 
 @RestController
-@RequestMapping("/survey")
+@RequestMapping("/api/survey")
 public class SurveyController {
 
     private final SupabaseQuestionRepository questionRepository = new SupabaseQuestionRepository();
+
+    /**
+     * Retrieves all active questions from SupaBase for the quiz.
+     *
+     * @return a list of all quiz questions
+     */
 
     @Operation(summary = "Retrieves all active questions for the quiz")
     @GetMapping("/questions")
