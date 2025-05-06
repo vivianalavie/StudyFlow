@@ -19,14 +19,8 @@ public class CourseController {
     @Operation(summary =  "Create a new course as a user")
     @PostMapping
     public ResponseEntity<String> createCourse(@RequestBody Course course) {
-        try {
-            courseService.createCourse(course);
-            return ResponseEntity.status(HttpStatus.CREATED).body("Course created successfully.");
-        } catch (Exception e) {
-            e.printStackTrace(); // <- zeigt dir den echten Fehler in der Konsole
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
-        }
+        courseService.createCourse(course);
+        return ResponseEntity.status(HttpStatus.CREATED).body("Course created successfully.");
     }
-
 }
 

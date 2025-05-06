@@ -17,11 +17,11 @@ public interface CourseRepository {
 
     @SqlUpdate("""
         INSERT INTO courses (
-            id, created_by, name, description, start_date, end_date,
+            created_by, name, description, start_date, end_date,
             professor_name, total_points, total_workload_hours, total_self_work_hours
         )
         VALUES (
-            :id, :createdBy, :name, :description, :startDate, :endDate,
+            :createdBy, :name, :description, :startDate, :endDate,
             :professorName, :totalPoints, :totalWorkloadHours, :totalSelfWorkHours
         )
     """)

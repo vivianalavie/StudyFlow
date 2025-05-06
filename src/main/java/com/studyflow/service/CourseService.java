@@ -17,7 +17,7 @@ public class CourseService {
     }
 
     public void createCourse(Course course) {
-        course.setId(UUID.randomUUID()); // UUID generieren, falls nicht vorhanden
+        //course.setId(UUID.randomUUID()); // generate UUID, if not there
         jdbi.useExtension(CourseRepository.class, repo -> repo.insertCourse(course));
     }
 }
