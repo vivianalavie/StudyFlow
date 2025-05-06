@@ -23,4 +23,14 @@ public class CourseService {
             e.printStackTrace();
         }
     }
+    public void updateCourse(UUID id, Course course) {
+        try {
+            jdbi.useExtension(CourseRepository.class, repo -> {
+                course.setId(id);
+                repo.updateCourse(course);
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

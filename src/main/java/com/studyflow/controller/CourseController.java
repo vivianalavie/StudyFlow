@@ -3,9 +3,12 @@ package com.studyflow.controller;
 import com.studyflow.model.course.Course;
 import com.studyflow.service.CourseService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("api/courses")
@@ -17,10 +20,20 @@ public class CourseController {
         this.courseService = courseService;
     }
     @Operation(summary =  "Create a new course as a user")
-    @PostMapping
+    @PostMapping("/create")
     public ResponseEntity<String> createCourse(@RequestBody Course course) {
         courseService.createCourse(course);
         return ResponseEntity.status(HttpStatus.CREATED).body("Course created successfully.");
+    }
+    @PutMapping("/edit/{id}")
+    @Operation(summary = "Update an existing course by ID")
+    public ResponseEntity<String> updateCourse(
+            @Parameter(description = "The ID of the course to update", required = true)
+            @PathVariable("id") UUID id,
+            @RequestBody Course course
+    ) {
+        courseService.updateCourse(id, course);
+        return ResponseEntity.ok("Course updated successfully.");
     }
 }
 

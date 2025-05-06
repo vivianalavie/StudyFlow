@@ -26,4 +26,19 @@ public interface CourseRepository {
         )
     """)
     void insertCourse(@BindBean Course course);
+
+    @SqlUpdate("""
+    UPDATE courses SET
+        name = :name,
+        description = :description,
+        start_date = :startDate,
+        end_date = :endDate,
+        professor_name = :professorName,
+        total_points = :totalPoints,
+        total_workload_hours = :totalWorkloadHours,
+        total_self_work_hours = :totalSelfWorkHours
+    WHERE id = :id
+""")
+    void updateCourse(@BindBean Course course);
+
 }
