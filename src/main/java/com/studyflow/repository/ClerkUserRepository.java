@@ -2,6 +2,8 @@ package com.studyflow.repository;
 
 import com.clerk.backend_api.Clerk;
 import com.clerk.backend_api.Clerk.Builder;
+import com.clerk.backend_api.models.operations.CreateSignInTokenRequestBody;
+import com.clerk.backend_api.models.operations.CreateSignInTokenResponse;
 import com.clerk.backend_api.models.operations.CreateUserRequestBody;
 import com.clerk.backend_api.models.operations.CreateUserResponse;
 import com.studyflow.model.auth.AuthResponse;
@@ -33,10 +35,28 @@ public class ClerkUserRepository implements UserRepository {
                     .request(req)
                     .call();
 
+            if (res.user().isPresent()) {
+                CreateSignInTokenRequestBody accessTokenReq = CreateSignInTokenRequestBody.builder()
+                        .userId(res.user().get().id().get())
+                        .build();
+
+                CreateSignInTokenResponse accessTokenRes = clerk.signInTokens().create()
+                        .request(accessTokenReq)
+                        .call();
+
+                System.out.println(accessTokenRes);
+
+            } else {
+                return null;
+            }
+
             System.out.println(res);
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+
+
 
         return null;
     }
