@@ -5,9 +5,8 @@ import com.google.gson.Gson;
 import com.studyflow.model.survey.Questions;
 import com.studyflow.repository.SupabaseQuestionRepository;
 import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
@@ -27,6 +26,14 @@ public class SurveyController {
     @GetMapping("/questions")
     public List<Questions> getQuestions() {
         return questionRepository.getAllQuestions(); //Gets all questions from SupaBase
+    }
+
+    @PostMapping("/quiz/answer")
+    @Operation(summary = "Submit a user's answer to a quiz question")
+    public ResponseEntity<String> submitAnswer(@RequestBody QuizAnswer submission) {
+        // Beispielhafte Speicherung der Antwort – anpassen je nach Bedarf
+        quizRepository.save(submission); // vorausgesetzt, quizRepository kann das
+        return ResponseEntity.ok("Antwort erfolgreich übermittelt");
     }
 
 }
