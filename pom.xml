@@ -93,6 +93,12 @@
             <version>3.3.3</version>
         </dependency>
 
+        <!-- Clerk for auth -->
+        <dependency>
+            <groupId>com.clerk</groupId>
+            <artifactId>backend-api</artifactId>
+            <version>2.3.1</version>
+        </dependency>
 
 
 

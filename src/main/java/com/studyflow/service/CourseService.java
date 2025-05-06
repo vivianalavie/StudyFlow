@@ -17,7 +17,10 @@ public class CourseService {
     }
 
     public void createCourse(Course course) {
-        //course.setId(UUID.randomUUID()); // generate UUID, if not there
-        jdbi.useExtension(CourseRepository.class, repo -> repo.insertCourse(course));
+        try {
+            jdbi.useExtension(CourseRepository.class, repo -> repo.insertCourse(course));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
