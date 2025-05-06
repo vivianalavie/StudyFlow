@@ -23,6 +23,7 @@ public class CourseService {
             e.printStackTrace();
         }
     }
+
     public void updateCourse(UUID id, Course course) {
         try {
             jdbi.useExtension(CourseRepository.class, repo -> {
@@ -33,4 +34,15 @@ public class CourseService {
             e.printStackTrace();
         }
     }
+
+    public void deleteCourse(UUID id) {
+        try {
+            jdbi.useExtension(CourseRepository.class, repo -> repo.deleteCourseById(id));
+        } catch (Exception e) {
+            System.err.println("Error while deleting course: " + e.getMessage());
+            e.printStackTrace();
+            throw new RuntimeException("Error while deleting course", e);
+        }
+    }
+
 }

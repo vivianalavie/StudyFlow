@@ -25,6 +25,7 @@ public class CourseController {
         courseService.createCourse(course);
         return ResponseEntity.status(HttpStatus.CREATED).body("Course created successfully.");
     }
+
     @PutMapping("/edit/{id}")
     @Operation(summary = "Update an existing course by ID")
     public ResponseEntity<String> updateCourse(
@@ -34,6 +35,13 @@ public class CourseController {
     ) {
         courseService.updateCourse(id, course);
         return ResponseEntity.ok("Course updated successfully.");
+    }
+
+    @DeleteMapping("/delete/{id}")
+    @Operation(summary = "Delete a course by ID")
+    public ResponseEntity<String> deleteCourse(@PathVariable("id") UUID id) {
+        courseService.deleteCourse(id);
+        return ResponseEntity.ok("Course deleted successfully.");
     }
 }
 

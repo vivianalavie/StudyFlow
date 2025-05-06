@@ -2,6 +2,7 @@ package com.studyflow.repository;
 
 import com.studyflow.model.course.Course;
 import org.jdbi.v3.sqlobject.config.RegisterBeanMapper;
+import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindBean;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
@@ -41,4 +42,6 @@ public interface CourseRepository {
 """)
     void updateCourse(@BindBean Course course);
 
+    @SqlUpdate("DELETE FROM courses WHERE id = :id")
+    void deleteCourseById(@Bind("id") UUID id);
 }
