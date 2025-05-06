@@ -11,7 +11,7 @@ import java.util.*;
 
 @RestController
 @RequestMapping("/api")
-public class QuizController {
+public class QuizQuestionController {
 
     @Operation(summary = "Retrieves all active questions for the quiz")
     @GetMapping("/quiz")
