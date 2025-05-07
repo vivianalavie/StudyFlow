@@ -18,7 +18,7 @@ public interface CourseRepository {
 
     @SqlUpdate("""
         INSERT INTO courses (
-            created_by, name, description, start_date, end_date,
+            created_by_user, name, description, start_date, end_date,
             professor_name, total_points, total_workload_hours, total_self_work_hours
         )
         VALUES (
