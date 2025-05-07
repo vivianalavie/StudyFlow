@@ -73,6 +73,7 @@
             <version>3.49.3</version>
         </dependency>
 
+
         <!--Also necessary for Supabase connection-->
         <dependency>
             <groupId>org.postgresql</groupId>
