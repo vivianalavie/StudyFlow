@@ -1,6 +1,6 @@
 package com.studyflow.controller;
 
-import com.studyflow.model.auth.AuthResponse;
+import com.studyflow.model.auth.SignUpResponse;
 import com.studyflow.model.auth.UserCredentialsModel;
 import com.studyflow.repository.ClerkUserRepository;
 import com.studyflow.repository.UserRepository;
@@ -15,11 +15,11 @@ public class AuthController {
 
     @Operation(summary = "Register a new user")
     @PostMapping("/register")
-    public AuthResponse register(@RequestBody UserCredentialsModel user) { return userRepository.signup(user); }
+    public SignUpResponse register(@RequestBody UserCredentialsModel user) { return userRepository.signup(user); }
 
-    @Operation(summary = "Login a user")
-    @PostMapping("/login")
-    public AuthResponse login(@RequestBody UserCredentialsModel user) {
-        return userRepository.login(user);
+    @Operation(summary = "Delete a user")
+    @DeleteMapping("/delete/{id}")
+    public void deleteUser(@PathVariable("id") String userId) {
+        userRepository.deleteUser(userId);
     }
 }

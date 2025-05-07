@@ -2,19 +2,15 @@ package com.studyflow.repository;
 
 import com.clerk.backend_api.Clerk;
 import com.clerk.backend_api.Clerk.Builder;
-import com.clerk.backend_api.models.errors.AuthException;
+import com.clerk.backend_api.models.components.User;
 import com.clerk.backend_api.models.errors.ClerkErrors;
-import com.clerk.backend_api.models.operations.CreateSignInTokenRequestBody;
-import com.clerk.backend_api.models.operations.CreateSignInTokenResponse;
-import com.clerk.backend_api.models.operations.CreateUserRequestBody;
-import com.clerk.backend_api.models.operations.CreateUserResponse;
+import com.clerk.backend_api.models.operations.*;
 import com.studyflow.exception.SignupFlowException;
-import com.studyflow.model.auth.AuthResponse;
+import com.studyflow.model.auth.SignUpResponse;
 import com.studyflow.model.auth.UserCredentialsModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.security.SignatureException;
 import java.util.Collections;
 
 public class ClerkUserRepository implements UserRepository {
@@ -33,7 +29,7 @@ public class ClerkUserRepository implements UserRepository {
     }
 
     @Override
-    public AuthResponse signup(UserCredentialsModel user)
+    public SignUpResponse signup(UserCredentialsModel user)
     {
         try {
             CreateUserRequestBody userCreationRequest = CreateUserRequestBody.builder()
@@ -45,50 +41,52 @@ public class ClerkUserRepository implements UserRepository {
                     .request(userCreationRequest)
                     .call();
 
-            System.out.println(userCreationResponse);
+            log.info(userCreationResponse.user().toString());
+
+            return new SignUpResponse(
+                    userCreationResponse.user().flatMap(User::id)
+            );
+
         }  catch (ClerkErrors clerkError) {
             String clerkErrorCode = clerkError.errors().get(0).code();
 
             log.error(clerkErrorCode);
-
-            switch (clerkErrorCode) {
-                case "form_password_pwned":
-                    throw new SignupFlowException.PasswordLeaked();
-                case "form_email_invalid":
-                    throw new SignupFlowException.InvalidEmail();
-                case "form_identifier_exists":
-                    throw new SignupFlowException.UserExists();
-                default:
-                    throw new SignupFlowException.SignupError();
-            }
+            throw switch (clerkErrorCode) {
+                case "form_password_pwned" -> new SignupFlowException.PasswordLeaked();
+                case "form_email_invalid" -> new SignupFlowException.InvalidEmail();
+                case "form_identifier_exists" -> new SignupFlowException.UserExists();
+                case "form_password_length_too_short" -> new SignupFlowException.PasswordTooShort();
+                default -> new SignupFlowException.SignupError();
+            };
         } catch (Exception e) {
             throw new SignupFlowException.SignupError();
         }
-        return null;
     }
 
-    @Override
-    public void verifyEmail(String token) {
 
-    }
-
-    @Override
-    public AuthResponse login(UserCredentialsModel user) {
-        return null;
-    }
 
     @Override
     public void deleteUser(String userId) {
+        try {
+            DeleteUserResponse deleteUserResponse = clerk.users().delete()
+                    .userId(userId)
+                    .call();
+
+            log.info(deleteUserResponse.toString());
+
+        } catch (ClerkErrors clerkErrors) {
+            if (clerkErrors.errors().get(0).code().equals("resource_not_found")) {
+                log.error("User not found");
+            } else {
+                log.error("Unknown error");
+            }
+        } catch (Exception e) {
+            log.error(e.getMessage());
+        }
+    }
+
+    private void getJWKS() {
 
     }
 
-    @Override
-    public void requestPasswordReset(String email) {
-
-    }
-
-    @Override
-    public void resetPassword(String token, String newPassword) {
-
-    }
 }

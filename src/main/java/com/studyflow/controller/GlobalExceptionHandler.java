@@ -5,32 +5,35 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@ControllerAdvice
+@RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @ExceptionHandler(SignupFlowException.SignupError.class)
-    public ResponseEntity<String> handleSignupErrorException(SignupFlowException.SignupError ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("We failed to sign you up. Please try again later");
-    }
-
-    @ExceptionHandler(SignupFlowException.PasswordLeaked.class)
-    public ResponseEntity<String> handlePasswordLeakedException(SignupFlowException.PasswordLeaked ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Your password has been found in a data breach");
-    }
-
-    @ExceptionHandler(SignupFlowException.InvalidEmail.class)
-    public ResponseEntity<String> handleInvalidEmailException(SignupFlowException.InvalidEmail ex) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("The email provided is invalid");
-    }
-
-    @ExceptionHandler(SignupFlowException.UserExists.class)
-    public ResponseEntity<String> handleDuplicateUser(SignupFlowException.UserExists ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("The email you provided is already associated with another user");
-    }
-
-    //Optional: Generic handler
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<String> handleGenericException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred");
+    @ExceptionHandler(SignupFlowException.class)
+    public ResponseEntity<String> handleSignupFlowException(
+            SignupFlowException ex
+    ) {
+        if (ex instanceof SignupFlowException.PasswordLeaked) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Your password has been found in a data breach. Please choose a stronger password.");
+        } else if (ex instanceof SignupFlowException.InvalidEmail) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Please enter a valid email address.");
+        } else if (ex instanceof SignupFlowException.UserExists) {
+            return ResponseEntity
+                    .status(HttpStatus.CONFLICT)
+                    .body("A user with that email address already exists.");
+        }
+        else if (ex instanceof SignupFlowException.PasswordTooShort) {
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body("Password is too short");
+        }
+        else {
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("An unexpected error occurred during signup.");
+        }
     }
 }
