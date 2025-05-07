@@ -18,7 +18,7 @@ public interface AssignmentRepository {
     VALUES (
         :id, :title, :description, :courseId, :totalAchievablePoints, :deadline, :difficulty::difficulty
     )
-""")
+    """)
     void insertAssignment(@BindBean Assignment assignment);
 
 

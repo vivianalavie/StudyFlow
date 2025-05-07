@@ -18,7 +18,7 @@ public interface CourseRepository {
 
     @SqlUpdate("""
         INSERT INTO courses (
-            created_by_user, name, description, start_date, end_date,
+            created_by_user_id, name, description, start_date, end_date,
             professor_name, total_points, total_workload_hours, total_self_work_hours
         )
         VALUES (
@@ -39,7 +39,7 @@ public interface CourseRepository {
         total_workload_hours = :totalWorkloadHours,
         total_self_work_hours = :totalSelfWorkHours
     WHERE id = :id
-""")
+    """)
     void updateCourse(@BindBean Course course);
 
     @SqlUpdate("DELETE FROM courses WHERE id = :id")
