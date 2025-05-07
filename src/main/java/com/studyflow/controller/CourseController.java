@@ -19,6 +19,7 @@ public class CourseController {
     public CourseController(CourseService courseService) {
         this.courseService = courseService;
     }
+
     @Operation(summary =  "Create a new course as a user")
     @PostMapping("/create")
     public ResponseEntity<String> createCourse(@RequestBody Course course) {
