@@ -19,9 +19,9 @@ public class QuizQuestionController {
     }
 
 
-
-@PostMapping("/quiz/answer")
-@Operation(summary = "Submit a user's answer to a quiz question")
-public ResponseEntity<String> submitAnswer(@RequestBody SupabaseQuizRepository submission) {
-}
+    @PostMapping("/quiz/answer")
+    @Operation(summary = "Submit a user's answer to a quiz question")
+    public ResponseEntity<String> submitAnswer(@RequestBody SupabaseQuizRepository submission) {
+        return null;
+    }
 }

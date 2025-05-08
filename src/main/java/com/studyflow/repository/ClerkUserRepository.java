@@ -7,9 +7,11 @@ import com.clerk.backend_api.models.operations.CreateSignInTokenResponse;
 import com.clerk.backend_api.models.operations.CreateUserRequestBody;
 import com.clerk.backend_api.models.operations.CreateUserResponse;
 import com.studyflow.model.auth.AuthResponse;
+import com.studyflow.model.auth.AuthenticatedUser;
 import com.studyflow.model.auth.UserCredentialsModel;
 
 import java.util.Collections;
+import java.util.Optional;
 
 public class ClerkUserRepository implements UserRepository {
 
@@ -64,5 +66,15 @@ public class ClerkUserRepository implements UserRepository {
     @Override
     public AuthResponse login(UserCredentialsModel user) {
         return null;
+    }
+
+    @Override
+    public AuthResponse logout() {
+        return null;
+    }
+
+    @Override
+    public Optional<AuthenticatedUser> getAuthenticatedUser(UserCredentialsModel user) {
+        return Optional.empty();
     }
 }
