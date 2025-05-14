@@ -1,6 +1,7 @@
 package com.studyflow.repository;
 
 import com.studyflow.model.assignment.Assignment;
+import org.jdbi.v3.sqlobject.config.RegisterBeanMapper;
 import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindBean;
@@ -42,11 +43,9 @@ public interface AssignmentRepository {
     @SqlQuery("""
     SELECT * FROM assignments 
     WHERE course_id IN (
-        SELECT id FROM courses WHERE created_by = :userId
+        SELECT id FROM courses WHERE created_by_user_id = :userId
     )
 """)
-    @RegisterConstructorMapper(Assignment.class)
+    @RegisterBeanMapper(Assignment.class)
     List<Assignment> getAssignmentsByUserId(@Bind("userId") UUID userId);
-
-
 }

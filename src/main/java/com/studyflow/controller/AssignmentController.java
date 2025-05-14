@@ -42,7 +42,7 @@ public class AssignmentController {
 
     @Operation(summary = "Get all assignments for a user")
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Assignment>> getAssignmentsByUser(@PathVariable("id") UUID userId) {
+    public ResponseEntity<List<Assignment>> getAssignmentsByUser(@PathVariable("userId") UUID userId) {
         List<Assignment> assignments = assignmentService.getAssignmentsByUser(userId);
         return ResponseEntity.ok(assignments);
     }
