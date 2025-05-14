@@ -5,6 +5,7 @@ import com.studyflow.repository.AssignmentRepository;
 import org.jdbi.v3.core.Jdbi;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -32,4 +33,9 @@ public class AssignmentService {
     public void deleteAssignment(UUID id) {
         jdbi.useExtension(AssignmentRepository.class, repo -> repo.deleteAssignment(id));
     }
+
+    public List<Assignment> getAssignmentsByUser(UUID userId) {
+        return jdbi.withExtension(AssignmentRepository.class, repo -> repo.getAssignmentsByUserId(userId));
+    }
+
 }

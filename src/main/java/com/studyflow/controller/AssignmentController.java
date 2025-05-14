@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -24,16 +25,26 @@ public class AssignmentController {
         assignmentService.createAssignment(assignment);
         return ResponseEntity.status(HttpStatus.CREATED).body("Assignment created.");
     }
+
     @Operation(summary = "Update an existing assignment")
     @PutMapping("/edit/{id}")
     public ResponseEntity<String> updateAssignment(@PathVariable("id") UUID id, @RequestBody Assignment assignment) {
         assignmentService.updateAssignment(id, assignment);
         return ResponseEntity.ok("Assignment updated.");
     }
+
     @Operation(summary = "Delete an existing assignment")
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteAssignment(@PathVariable("id") UUID id) {
         assignmentService.deleteAssignment(id);
         return ResponseEntity.ok("Assignment deleted.");
     }
+
+    @Operation(summary = "Get all assignments for a user")
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Assignment>> getAssignmentsByUser(@PathVariable("id") UUID userId) {
+        List<Assignment> assignments = assignmentService.getAssignmentsByUser(userId);
+        return ResponseEntity.ok(assignments);
+    }
+
 }

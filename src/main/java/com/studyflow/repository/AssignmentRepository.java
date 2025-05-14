@@ -4,8 +4,10 @@ import com.studyflow.model.assignment.Assignment;
 import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindBean;
+import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 
+import java.util.List;
 import java.util.UUID;
 
 @RegisterConstructorMapper(Assignment.class)
@@ -36,4 +38,15 @@ public interface AssignmentRepository {
 
     @SqlUpdate("DELETE FROM assignments WHERE id = :id")
     void deleteAssignment(@Bind("id") UUID id);
+
+    @SqlQuery("""
+    SELECT * FROM assignments 
+    WHERE course_id IN (
+        SELECT id FROM courses WHERE created_by = :userId
+    )
+""")
+    @RegisterConstructorMapper(Assignment.class)
+    List<Assignment> getAssignmentsByUserId(@Bind("userId") UUID userId);
+
+
 }
