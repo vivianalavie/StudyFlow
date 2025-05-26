@@ -46,7 +46,7 @@ public class CourseController {
         return ResponseEntity.ok("Course deleted successfully.");
     }
 
-    @GetMapping("/my")
+    @GetMapping("/user/{userId}")
     @Operation(summary = "Get all courses created by the current user")
     public ResponseEntity<List<Course>> getCoursesByUserId(@RequestParam("userId") UUID userId) {
         List<Course> courses = courseService.getCoursesByUserId(userId);
