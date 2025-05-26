@@ -47,7 +47,7 @@ public interface CourseRepository {
     @SqlUpdate("DELETE FROM courses WHERE id = :id")
     void deleteCourseById(@Bind("id") UUID id);
 
-    @SqlQuery("SELECT * FROM courses WHERE created_by = :userId")
+    @SqlQuery("SELECT * FROM courses WHERE created_by_user_id = :userId")
     @RegisterBeanMapper(Course.class)
     List<Course> findCoursesByUserId(@Bind("userId") UUID userId);
 
