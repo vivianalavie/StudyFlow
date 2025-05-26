@@ -8,6 +8,8 @@ import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
+
+import java.util.List;
 import java.util.UUID;
 
 
@@ -44,4 +46,9 @@ public interface CourseRepository {
 
     @SqlUpdate("DELETE FROM courses WHERE id = :id")
     void deleteCourseById(@Bind("id") UUID id);
+
+    @SqlQuery("SELECT * FROM courses WHERE created_by = :userId")
+    @RegisterBeanMapper(Course.class)
+    List<Course> findCoursesByUserId(@Bind("userId") UUID userId);
+
 }

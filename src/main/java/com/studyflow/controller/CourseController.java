@@ -8,6 +8,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -44,5 +45,13 @@ public class CourseController {
         courseService.deleteCourse(id);
         return ResponseEntity.ok("Course deleted successfully.");
     }
+
+    @GetMapping("/my")
+    @Operation(summary = "Get all courses created by the current user")
+    public ResponseEntity<List<Course>> getCoursesByUserId(@RequestParam("userId") UUID userId) {
+        List<Course> courses = courseService.getCoursesByUserId(userId);
+        return ResponseEntity.ok(courses);
+    }
+
 }
 
