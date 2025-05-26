@@ -1,27 +1,26 @@
 package com.studyflow.controller;
 
-import com.studyflow.repository.SupabaseQuizRepository;
+import com.studyflow.model.QuizQuestion;
+import com.studyflow.repository.QuizQuestionRepository;
 import io.swagger.v3.oas.annotations.Operation;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.jdbi.v3.core.Jdbi;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api")
 public class QuizQuestionController {
 
-    @Operation(summary = "Retrieves all active questions for the quiz")
-    @GetMapping("/quiz")
-    public String quiz() {
-        return "";
+    private final QuizQuestionRepository repository;
+
+    public QuizQuestionController(Jdbi jdbi) {
+        this.repository = jdbi.onDemand(QuizQuestionRepository.class);
     }
 
-
-    @PostMapping("/quiz/answer")
-    @Operation(summary = "Submit a user's answer to a quiz question")
-    public ResponseEntity<String> submitAnswer(@RequestBody SupabaseQuizRepository submission) {
-        return null;
+    @Operation(summary = "Retrieves all active questions for the quiz")
+    @GetMapping("/quiz")
+    public List<QuizQuestion> getActiveQuizQuestions() {
+        return repository.getActiveQuizQuestions();
     }
 }
