@@ -5,6 +5,7 @@ import com.studyflow.repository.CourseRepository;
 import org.jdbi.v3.core.Jdbi;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -44,5 +45,10 @@ public class CourseService {
             throw new RuntimeException("Error while deleting course", e);
         }
     }
+
+    public List<Course> getCoursesByUserId(UUID userId) {
+        return jdbi.withExtension(CourseRepository.class, repo -> repo.findCoursesByUserId(userId));
+    }
+
 
 }
