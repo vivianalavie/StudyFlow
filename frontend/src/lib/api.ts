@@ -1,4 +1,4 @@
-// frontend/src/lib/api.ts
+
 export interface RegisterDto {
     firstName: string;
     lastName: string;
@@ -6,7 +6,7 @@ export interface RegisterDto {
     password: string;
 }
 
-// Lies dir die BASE_URL aus .env.local ein, mit Fallback
+
 const BASE_URL = process.env.NEXT_PUBLIC_JAVA_BACKEND_URL ?? "http://localhost:8080";
 
 export async function registerUser(data: RegisterDto) {
