@@ -1,0 +1,29 @@
+/* 1. Tailwind v4 lädt Preflight, Komponenten & Utilities automatisch */
+@import "tailwindcss";
+
+/* 2. CSS-Variablen – bleiben, wie sie sind */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* 3.  globalen Styles per @layer base */
+@layer base {
+  html,
+  body {
+    /* System-Sans aus  tailwind.config.js */
+    @apply font-sans;
+    /* Hintergrund- und Textfarbe */
+    background-color: var(--background);
+    color: var(--foreground);
+    margin: 0;
+    min-height: 100%;
+  }
+}
