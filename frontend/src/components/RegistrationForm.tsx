@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -27,7 +26,7 @@ export function RegistrationForm() {
         setError(null);
 
         if (form.password !== confirmPassword) {
-            setError("Passwörter stimmen nicht überein.");
+            setError("Passwords do not match.");
             return;
         }
 
@@ -38,7 +37,7 @@ export function RegistrationForm() {
             setForm({ firstName: "", lastName: "", email: "", password: "" });
             setConfirmPassword("");
         } catch (err: any) {
-            setError(err.message || "Registrierung fehlgeschlagen.");
+            setError(err.message || "Registration failed.");
         } finally {
             setLoading(false);
         }
@@ -47,8 +46,8 @@ export function RegistrationForm() {
     if (success) {
         return (
             <div className="p-6 bg-green-100 rounded">
-                <h2 className="text-green-800">Erfolg!</h2>
-                <p>Dein Account wurde angelegt. Du kannst dich jetzt einloggen.</p>
+                <h2 className="text-green-800">Success!</h2>
+                <p>Your account has been created. You can now sign in.</p>
             </div>
         );
     }
@@ -61,7 +60,7 @@ export function RegistrationForm() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <input
                     type="text"
-                    placeholder="Vorname"
+                    placeholder="First Name"
                     value={form.firstName}
                     onChange={handleChange("firstName")}
                     required
@@ -69,7 +68,7 @@ export function RegistrationForm() {
                 />
                 <input
                     type="text"
-                    placeholder="Nachname"
+                    placeholder="Last Name"
                     value={form.lastName}
                     onChange={handleChange("lastName")}
                     required
@@ -78,7 +77,7 @@ export function RegistrationForm() {
             </div>
             <input
                 type="email"
-                placeholder="E-Mail"
+                placeholder="Email"
                 value={form.email}
                 onChange={handleChange("email")}
                 required
@@ -86,7 +85,7 @@ export function RegistrationForm() {
             />
             <input
                 type="password"
-                placeholder="Passwort"
+                placeholder="Password"
                 value={form.password}
                 onChange={handleChange("password")}
                 required
@@ -94,9 +93,9 @@ export function RegistrationForm() {
             />
             <input
                 type="password"
-                placeholder="Passwort bestätigen"
+                placeholder="Confirm Password"
                 value={confirmPassword}
-                onChange={e => setConfirmPassword(e.target.value)}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 className="w-full p-2 border rounded"
             />
@@ -105,7 +104,7 @@ export function RegistrationForm() {
                 disabled={loading}
                 className="w-full py-2 bg-black text-white rounded disabled:opacity-50"
             >
-                {loading ? "Registrieren..." : "Account erstellen"}
+                {loading ? "Registering..." : "Create Account"}
             </button>
         </form>
     );

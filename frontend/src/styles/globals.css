@@ -5,6 +5,7 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --apple-gray: #f5f5f7;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -18,10 +19,8 @@
 @layer base {
   html,
   body {
-    /* System-Sans aus  tailwind.config.js */
     @apply font-sans;
-    /* Hintergrund- und Textfarbe */
-    background-color: var(--background);
+    background-color: var(--apple-gray);  /* statt var(--background) */
     color: var(--foreground);
     margin: 0;
     min-height: 100%;
