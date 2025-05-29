@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { registerUser, RegisterDto } from "../lib/api";
+import { useRouter } from "next/navigation";
 
 export function RegistrationForm() {
+    const router = useRouter();
     const [form, setForm] = useState<RegisterDto>({
         firstName: "",
         lastName: "",
@@ -34,8 +36,8 @@ export function RegistrationForm() {
         try {
             await registerUser(form);
             setSuccess(true);
-            setForm({ firstName: "", lastName: "", email: "", password: "" });
-            setConfirmPassword("");
+            // optionally redirect to sign-in after a short delay:
+            setTimeout(() => router.push("/"), 1500);
         } catch (err: any) {
             setError(err.message || "Registration failed.");
         } finally {
@@ -47,7 +49,7 @@ export function RegistrationForm() {
         return (
             <div className="p-6 bg-green-100 rounded">
                 <h2 className="text-green-800">Success!</h2>
-                <p>Your account has been created. You can now sign in.</p>
+                <p>Your account has been created. Redirecting to login…</p>
             </div>
         );
     }

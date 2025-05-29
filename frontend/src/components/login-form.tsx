@@ -1,14 +1,11 @@
-// frontend/src/components/login-form.tsx
 "use client";
 
 import { useState } from "react";
-
-interface LoginDto {
-    email: string;
-    password: string;
-}
+import { useRouter } from "next/navigation";
+import { loginUser, LoginDto } from "../lib/api";
 
 export default function LoginForm() {
+    const router = useRouter();
     const [form, setForm] = useState<LoginDto>({ email: "", password: "" });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -25,21 +22,16 @@ export default function LoginForm() {
         setLoading(true);
 
         try {
-            const res = await fetch(
-                `${process.env.NEXT_PUBLIC_JAVA_BACKEND_URL}/api/auth/login`,
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(form),
-                }
-            );
-            if (!res.ok) {
-                const body = await res.json().catch(() => null);
-                throw new Error(body?.message || `Login failed (${res.status})`);
-            }
-            // TODO: handle success (store token, redirect…)
+            await loginUser(form);
+            // on success, go to home/dashboard
+            router.push("/");
         } catch (err: any) {
-            setError(err.message);
+            if (err.message === "NOT_FOUND") {
+                // no such user or bad creds → go to register
+                router.push("/register");
+            } else {
+                setError(err.message);
+            }
         } finally {
             setLoading(false);
         }
@@ -47,10 +39,7 @@ export default function LoginForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-                <div className="p-3 bg-red-100 text-red-800 rounded">{error}</div>
-            )}
-
+            {error && <div className="p-3 bg-red-100 text-red-800 rounded">{error}</div>}
             <div className="space-y-2">
                 <label htmlFor="email" className="block text-sm font-medium">
                     Email
@@ -66,7 +55,6 @@ export default function LoginForm() {
                     className="w-full p-2 border rounded"
                 />
             </div>
-
             <div className="space-y-2">
                 <label htmlFor="password" className="block text-sm font-medium">
                     Password
@@ -82,7 +70,6 @@ export default function LoginForm() {
                     className="w-full p-2 border rounded"
                 />
             </div>
-
             <button
                 type="submit"
                 disabled={loading}
