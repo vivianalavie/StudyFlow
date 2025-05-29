@@ -73,6 +73,7 @@
             <version>3.49.3</version>
         </dependency>
 
+
         <!--Also necessary for Supabase connection-->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -99,7 +100,6 @@
             <artifactId>backend-api</artifactId>
             <version>2.3.1</version>
         </dependency>
-
 
 
     </dependencies>
