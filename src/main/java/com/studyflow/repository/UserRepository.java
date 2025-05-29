@@ -11,4 +11,5 @@ public interface UserRepository {
     AuthResponse login(UserCredentialsModel user);
     AuthResponse logout();
     Optional<AuthenticatedUser> getAuthenticatedUser(UserCredentialsModel user);
+    void deleteUser(String userId);
 }

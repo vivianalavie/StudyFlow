@@ -77,4 +77,10 @@ public class ClerkUserRepository implements UserRepository {
     public Optional<AuthenticatedUser> getAuthenticatedUser(UserCredentialsModel user) {
         return Optional.empty();
     }
+
+    @Override
+    public void deleteUser(String userId) {
+        // TODO: Implementiere tatsächliche Löschung über Clerk SDK!!!!
+        System.out.println("Delete user with ID: " + userId);
+    }
 }

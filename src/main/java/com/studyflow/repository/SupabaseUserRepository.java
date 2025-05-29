@@ -53,6 +53,13 @@ public class SupabaseUserRepository implements UserRepository {
         }
     }
 
+    @Override
+    public void deleteUser(String userId) {
+        // TODO: Implementiere die Löschung über Supabase API, wenn nötig.
+        System.out.println("Deleting user in Supabase with ID: " + userId);
+    }
+
+
     // ---------- Internal Helpers ----------
 
     private AuthResponse postToSupabase(String endpoint, UserCredentialsModel user) {
