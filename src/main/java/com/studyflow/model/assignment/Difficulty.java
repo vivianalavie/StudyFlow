@@ -1,9 +1,9 @@
 package com.studyflow.model.assignment;
 
 public enum Difficulty {
-    VERY_EASY,
-    EASY,
-    NORMAL,
-    DIFFICULT,
-    VERY_DIFFICULT
+    VERY_EASY, //0.9
+    EASY, //0.95
+    NORMAL, //1
+    DIFFICULT, //1.05
+    VERY_DIFFICULT //1.1
 }
