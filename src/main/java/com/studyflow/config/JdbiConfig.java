@@ -16,4 +16,5 @@ public class JdbiConfig {
         jdbi.installPlugin(new SqlObjectPlugin());
         return jdbi;
     }
+
 }
