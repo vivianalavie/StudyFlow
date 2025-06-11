@@ -18,17 +18,15 @@ public interface UserCreationRepository {
             end_learning_time,
             username,
             blackout_weekdays,
-            chronotype,
             clerk_user_id
         )
         VALUES (
-            :timezone,
+            "Europa/Berlin",
             :maxStudyDuration,
             :startLearningTime,
             :endLearningTime,
             :username,
             :blackoutWeekdays,
-            :chronotype,
             :clerkUserId
         )
     """)

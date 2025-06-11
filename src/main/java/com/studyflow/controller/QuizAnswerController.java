@@ -26,6 +26,4 @@ public class QuizAnswerController {
         answer.setCreatedOn(OffsetDateTime.now());
         repository.insertQuizAnswer(answer);
     }
-
-
 }

@@ -43,7 +43,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
         RequestState state = AuthenticateRequest.authenticateRequest(
                 headers,
                 AuthenticateRequestOptions
-                        .secretKey(System.getenv("CLERK_TOKEN"))
+                        .secretKey(System.getenv("CLERK_TOKEN")) //Eigentlich CLERK_TOKEN --
                         .build()
         );
 

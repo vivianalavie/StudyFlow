@@ -19,6 +19,7 @@ public class UserCreationController {
     @PostMapping
     public ResponseEntity<Void> createUser(@RequestBody UserCreation request, @CurrentUser String clerkUserId) {
         userCreationService.createUser(request, clerkUserId);
+        System.out.println("✅ clerkUserId = " + clerkUserId);
         return ResponseEntity.ok().build();
     }
 }
