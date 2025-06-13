@@ -21,7 +21,7 @@ public interface UserCreationRepository {
             clerk_user_id
         )
         VALUES (
-            "Europa/Berlin",
+            'Europe/Berlin',
             :maxStudyDuration,
             :startLearningTime,
             :endLearningTime,

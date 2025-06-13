@@ -3,11 +3,14 @@ package com.studyflow.config;
 import com.clerk.backend_api.helpers.security.AuthenticateRequest;
 import com.clerk.backend_api.helpers.security.models.AuthenticateRequestOptions;
 import com.clerk.backend_api.helpers.security.models.RequestState;
+import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.*;
 
 public class ClerkAuthHelper {
+
+    private static final Dotenv dotenv = Dotenv.load();
 
     public static RequestState verifyRequest(HttpServletRequest request) {
         Map<String, List<String>> headers = extractHeaders(request);
@@ -15,7 +18,7 @@ public class ClerkAuthHelper {
         return AuthenticateRequest.authenticateRequest(
                 headers,
                 AuthenticateRequestOptions
-                        .secretKey(System.getenv("CLERK_TOKEN"))
+                        .secretKey(dotenv.get("CLERK_TOKEN"))
                         .build()
         );
     }

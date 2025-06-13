@@ -9,11 +9,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
+import io.github.cdimascio.dotenv.Dotenv;
 
 import java.util.*;
 
 @Component
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
+
+    private static final Dotenv dotenv = Dotenv.load();
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -43,7 +46,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
         RequestState state = AuthenticateRequest.authenticateRequest(
                 headers,
                 AuthenticateRequestOptions
-                        .secretKey(System.getenv("CLERK_TOKEN")) //Eigentlich CLERK_TOKEN --
+                        .secretKey(dotenv.get("CLERK_TOKEN")) //Eigentlich CLERK_TOKEN --
                         .build()
         );
 
