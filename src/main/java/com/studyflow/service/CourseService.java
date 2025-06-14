@@ -2,6 +2,7 @@ package com.studyflow.service;
 
 import com.studyflow.model.course.Course;
 import com.studyflow.repository.CourseRepository;
+import com.studyflow.repository.UserCreationRepository;
 import org.jdbi.v3.core.Jdbi;
 import org.springframework.stereotype.Service;
 
@@ -17,13 +18,17 @@ public class CourseService {
         this.jdbi = jdbi;
     }
 
-    public void createCourse(Course course) {
+    public void createCourse(Course course, String clerkUserId) {
         try {
+            UUID userId = getUserIdByClerkId(clerkUserId);
+            course.setCreatedBy(userId);
             jdbi.useExtension(CourseRepository.class, repo -> repo.insertCourse(course));
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Fehler beim Erstellen des Kurses", e);
         }
     }
+
 
     public void updateCourse(UUID id, Course course) {
         try {
@@ -49,6 +54,15 @@ public class CourseService {
     public List<Course> getCoursesByUserId(UUID userId) {
         return jdbi.withExtension(CourseRepository.class, repo -> repo.findCoursesByUserId(userId));
     }
+
+    public UUID getUserIdByClerkId(String clerkUserId) {
+        return jdbi.withExtension(UserCreationRepository.class, repo ->
+                repo.findUserIdByClerkUserId(clerkUserId)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found for clerk ID: " + clerkUserId))
+        );
+    }
+
+
 
 
 }

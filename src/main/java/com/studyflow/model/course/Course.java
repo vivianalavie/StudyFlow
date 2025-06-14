@@ -16,6 +16,7 @@ public class Course {
     private int totalPoints;
     private int totalWorkloadHours;
     private int totalSelfWorkHours;
+    private String color;
 
     public Course() {
     }
@@ -24,7 +25,7 @@ public class Course {
     @JdbiConstructor
     public Course(UUID id, UUID createdBy, String name, String description, LocalDate startDate,
                   LocalDate endDate, String professorName, int totalPoints,
-                  int totalWorkloadHours, int totalSelfWorkHours) {
+                  int totalWorkloadHours, int totalSelfWorkHours, String color) {
         this.id = id;
         this.createdBy = createdBy;
         this.name = name;
@@ -35,6 +36,7 @@ public class Course {
         this.totalPoints = totalPoints;
         this.totalWorkloadHours = totalWorkloadHours;
         this.totalSelfWorkHours = totalSelfWorkHours;
+        this.color = color;
     }
 
     // Getter and Setter
@@ -68,4 +70,7 @@ public class Course {
 
     public int getTotalSelfWorkHours() { return totalSelfWorkHours; }
     public void setTotalSelfWorkHours(int totalSelfWorkHours) { this.totalSelfWorkHours = totalSelfWorkHours; }
+
+    public String getColor() { return color; }
+    public void setColor(String color) { this.color = color; }
 }
