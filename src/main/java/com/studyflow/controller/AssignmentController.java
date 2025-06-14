@@ -1,5 +1,6 @@
 package com.studyflow.controller;
 
+import com.studyflow.auth.CurrentUser;
 import com.studyflow.model.assignment.Assignment;
 import com.studyflow.service.AssignmentService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -19,6 +20,7 @@ public class AssignmentController {
     public AssignmentController(AssignmentService assignmentService) {
         this.assignmentService = assignmentService;
     }
+
     @Operation(summary = "Create a new assignment")
     @PostMapping("/create")
     public ResponseEntity<String> createAssignment(@RequestBody Assignment assignment) {
@@ -41,8 +43,9 @@ public class AssignmentController {
     }
 
     @Operation(summary = "Get all assignments for a user")
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Assignment>> getAssignmentsByUser(@PathVariable("userId") UUID userId) {
+    @GetMapping("/my")
+    public ResponseEntity<List<Assignment>> getAssignmentsByUser(@CurrentUser String clerkUserId) {
+        UUID userId = assignmentService.getUserIdByClerkId(clerkUserId);
         List<Assignment> assignments = assignmentService.getAssignmentsByUser(userId);
         return ResponseEntity.ok(assignments);
     }
