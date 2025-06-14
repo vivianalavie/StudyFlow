@@ -4,6 +4,7 @@ import com.studyflow.model.user.UserCreation;
 import com.studyflow.repository.UserCreationRepository;
 import org.jdbi.v3.core.Jdbi;
 import org.springframework.stereotype.Service;
+import java.util.Optional;
 
 @Service
 public class UserCreationService {
@@ -24,4 +25,12 @@ public class UserCreationService {
             throw new RuntimeException("Fehler beim Anlegen des Users", e);
         }
     }
+
+    public boolean userExists(String clerkUserId) {
+        return jdbi.withExtension(UserCreationRepository.class, repo ->
+                repo.existsByClerkUserId(clerkUserId)
+        );
+    }
+
+
 }

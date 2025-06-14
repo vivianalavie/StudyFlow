@@ -22,4 +22,12 @@ public class UserCreationController {
         System.out.println("✅ clerkUserId = " + clerkUserId);
         return ResponseEntity.ok().build();
     }
+
+    @GetMapping("/exists")
+    public ResponseEntity<Boolean> doesUserExist(@CurrentUser String clerkUserId) {
+        boolean exists = userCreationService.userExists(clerkUserId);
+        return ResponseEntity.ok(exists);
+    }
+
+
 }

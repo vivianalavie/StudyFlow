@@ -4,8 +4,11 @@ import com.studyflow.model.user.UserCreation;
 import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
 import org.jdbi.v3.sqlobject.customizer.Bind;
 import org.jdbi.v3.sqlobject.customizer.BindBean;
+import org.jdbi.v3.sqlobject.statement.SqlQuery;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.jdbi.v3.sqlobject.config.RegisterBeanMapper;
+
+import java.util.Optional;
 
 @RegisterConstructorMapper(UserCreation.class)
 public interface UserCreationRepository {
@@ -31,4 +34,14 @@ public interface UserCreationRepository {
         )
     """)
     void insertUser(@BindBean UserCreation user, @Bind("clerkUserId") String clerkUserId);
+
+
+    @SqlQuery("""
+    SELECT EXISTS (
+        SELECT 1 FROM users WHERE clerk_user_id = :clerkUserId
+    )
+""")
+    boolean existsByClerkUserId(@Bind("clerkUserId") String clerkUserId);
+
+
 }
