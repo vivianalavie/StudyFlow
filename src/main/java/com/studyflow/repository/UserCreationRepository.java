@@ -9,6 +9,7 @@ import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.jdbi.v3.sqlobject.config.RegisterBeanMapper;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @RegisterConstructorMapper(UserCreation.class)
 public interface UserCreationRepository {
@@ -42,6 +43,12 @@ public interface UserCreationRepository {
     )
 """)
     boolean existsByClerkUserId(@Bind("clerkUserId") String clerkUserId);
+
+    @SqlQuery("""
+    SELECT id FROM users WHERE clerk_user_id = :clerkUserId
+""")
+    Optional<UUID> findUserIdByClerkUserId(@Bind("clerkUserId") String clerkUserId);
+
 
 
 }
