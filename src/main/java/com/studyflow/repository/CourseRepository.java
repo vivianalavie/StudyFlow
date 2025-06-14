@@ -21,11 +21,11 @@ public interface CourseRepository {
     @SqlUpdate("""
         INSERT INTO courses (
             created_by_user_id, name, description, start_date, end_date,
-            professor_name, total_points, total_workload_hours, total_self_work_hours
+            professor_name, total_points, total_workload_hours, total_self_work_hours, color
         )
         VALUES (
             :createdBy, :name, :description, :startDate, :endDate,
-            :professorName, :totalPoints, :totalWorkloadHours, :totalSelfWorkHours
+            :professorName, :totalPoints, :totalWorkloadHours, :totalSelfWorkHours, :color
         )
     """)
     void insertCourse(@BindBean Course course);
@@ -39,7 +39,8 @@ public interface CourseRepository {
         professor_name = :professorName,
         total_points = :totalPoints,
         total_workload_hours = :totalWorkloadHours,
-        total_self_work_hours = :totalSelfWorkHours
+        total_self_work_hours = :totalSelfWorkHours,
+        color = :color
     WHERE id = :id
     """)
     void updateCourse(@BindBean Course course);

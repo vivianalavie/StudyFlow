@@ -1,5 +1,6 @@
 package com.studyflow.controller;
 
+import com.studyflow.auth.CurrentUser;
 import com.studyflow.model.course.Course;
 import com.studyflow.service.CourseService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,11 +23,12 @@ public class CourseController {
     }
 
     @PostMapping("/create")
-    @Operation(summary =  "Create a new course as a user")
-    public ResponseEntity<String> createCourse(@RequestBody Course course) {
-        courseService.createCourse(course);
+    public ResponseEntity<String> createCourse(@RequestBody Course course, @CurrentUser String clerkUserId) {
+        course.setCreatedBy(null);
+        courseService.createCourse(course, clerkUserId);
         return ResponseEntity.status(HttpStatus.CREATED).body("Course created successfully.");
     }
+
 
     @PutMapping("/edit/{id}")
     @Operation(summary = "Update an existing course by ID")
@@ -46,12 +48,15 @@ public class CourseController {
         return ResponseEntity.ok("Course deleted successfully.");
     }
 
-    @GetMapping("/user/{userId}")
-    @Operation(summary = "Get all courses created by the current user")
-    public ResponseEntity<List<Course>> getCoursesByUserId(@RequestParam("userId") UUID userId) {
+    @GetMapping("/my")
+    @Operation(summary = "Get all courses created by the current (authenticated) user")
+    public ResponseEntity<List<Course>> getCoursesByCurrentUser(@CurrentUser String clerkUserId) {
+        UUID userId = courseService.getUserIdByClerkId(clerkUserId);
         List<Course> courses = courseService.getCoursesByUserId(userId);
         return ResponseEntity.ok(courses);
     }
+
+
 
 }
 
