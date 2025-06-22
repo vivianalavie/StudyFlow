@@ -1,4 +1,4 @@
-package com.studyflow.model.studysession;
+package com.studyflow.model.StudySession;
 
 import org.jdbi.v3.core.mapper.reflect.JdbiConstructor;
 
