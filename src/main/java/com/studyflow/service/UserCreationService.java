@@ -5,6 +5,7 @@ import com.studyflow.repository.UserCreationRepository;
 import org.jdbi.v3.core.Jdbi;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserCreationService {
@@ -32,5 +33,11 @@ public class UserCreationService {
         );
     }
 
+    public UUID getUserIdByClerkId(String clerkUserId) {
+        return jdbi.withExtension(UserCreationRepository.class, repo ->
+            repo.findUserIdByClerkUserId(clerkUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found for clerk ID: " + clerkUserId))
+        );
+    }
 
 }

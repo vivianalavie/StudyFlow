@@ -30,4 +30,8 @@ public class StudySessionService {
     public List<StudySession> getStudySessionsByAssignment(UUID assignmentId) {
         return jdbi.withExtension(StudySessionRepository.class, repo -> repo.getStudySessionsByAssignment(assignmentId));
     }
+
+    public void deleteStudySessionsByAssignment(UUID assignmentId) {
+        jdbi.useExtension(StudySessionRepository.class, repo -> repo.deleteStudySessionsByAssignment(assignmentId));
+    }
 } 

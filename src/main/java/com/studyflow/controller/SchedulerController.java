@@ -20,4 +20,4 @@ public class SchedulerController {
         schedulerService.generateScheduleForAssignment(assignmentId);
         return ResponseEntity.ok("Scheduler was generated.");
     }
-} 
+}

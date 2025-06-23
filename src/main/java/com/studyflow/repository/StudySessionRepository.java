@@ -26,4 +26,7 @@ public interface StudySessionRepository {
 
     @SqlQuery("SELECT * FROM study_sessions WHERE assignment_id = :assignmentId")
     List<StudySession> getStudySessionsByAssignment(@Bind("assignmentId") UUID assignmentId);
+
+    @SqlUpdate("DELETE FROM study_sessions WHERE assignment_id = :assignmentId")
+    void deleteStudySessionsByAssignment(@Bind("assignmentId") UUID assignmentId);
 } 

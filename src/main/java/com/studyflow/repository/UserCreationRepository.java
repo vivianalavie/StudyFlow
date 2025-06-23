@@ -49,6 +49,8 @@ public interface UserCreationRepository {
 """)
     Optional<UUID> findUserIdByClerkUserId(@Bind("clerkUserId") String clerkUserId);
 
-
+    @SqlQuery("SELECT * FROM users WHERE id = :id")
+    @RegisterBeanMapper(UserCreation.class)
+    UserCreation getUserById(@Bind("id") UUID id);
 
 }

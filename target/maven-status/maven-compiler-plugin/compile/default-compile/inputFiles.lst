@@ -9,6 +9,7 @@
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/controller/QuizAnswerController.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/model/scheduler/TimeSlot.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/config/WebConfig.java
+/Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/model/user/UserStudyPreference.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/service/CalendarService.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/controller/GlobalExceptionHandler.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/controller/TimeBlockerController.java
@@ -17,6 +18,7 @@
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/controller/QuizQuestionController.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/model/assignment/Assignment.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/config/JacksonConfig.java
+/Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/controller/UserStudyPreferenceController.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/exception/SignupFlowException.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/model/QuizAnswer/QuizAnswer.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/controller/CourseController.java
@@ -35,10 +37,12 @@
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/config/ClerkAuthHelper.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/Main.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/repository/QuizAnswerRepository.java
+/Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/service/UserStudyPreferenceService.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/repository/QuizQuestionRepository.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/auth/CurrentUserArgumentResolver.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/model/QuizQuestion.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/model/assignment/Difficulty.java
+/Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/repository/UserStudyPreferenceRepository.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/service/SchedulerService.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/auth/CurrentUser.java
 /Users/maurice/Studyflow-final-backend/StudyFlow/src/main/java/com/studyflow/repository/StudySessionRepository.java
