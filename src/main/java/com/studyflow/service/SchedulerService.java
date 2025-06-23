@@ -150,6 +150,11 @@ public class SchedulerService {
         List<ScoredSubslot> allSubslots = new ArrayList<>();
         for (Map.Entry<LocalDate, List<TimeSlot>> entry : freeSlotsPerDay.entrySet()) {
             LocalDate date = entry.getKey();
+            // Prüfe, ob der Tag ein Blackout-Tag ist
+            if (blackoutWeekdays != null && blackoutWeekdays.contains(date.getDayOfWeek().name().toLowerCase())) {
+                System.out.println("[Scheduler][DEBUG] Blackout-Day übersprungen (Subslot-Erzeugung): " + date + " (" + date.getDayOfWeek().name() + ")");
+                continue;
+            }
             for (TimeSlot slot : entry.getValue()) {
                 LocalDateTime slotStart = slot.getStart();
                 LocalDateTime slotEnd = slot.getEnd();
