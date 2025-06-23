@@ -3,10 +3,12 @@ package com.studyflow.model.course;
 import java.time.LocalDate;
 import java.util.UUID;
 import org.jdbi.v3.core.mapper.reflect.JdbiConstructor;
+import org.jdbi.v3.core.mapper.reflect.ColumnName;
 
 public class Course {
 
     private UUID id;
+    @ColumnName("created_by_user_id")
     private UUID createdBy;
     private String name;
     private String description;

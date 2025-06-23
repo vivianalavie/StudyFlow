@@ -7,15 +7,10 @@ import org.jdbi.v3.sqlobject.customizer.BindBean;
 import org.jdbi.v3.sqlobject.statement.SqlUpdate;
 import org.jdbi.v3.sqlobject.statement.GetGeneratedKeys;
 import org.jdbi.v3.sqlobject.statement.SqlQuery;
-import org.jdbi.v3.sqlobject.config.RegisterConstructorMapper;
 
 import java.util.List;
 import java.util.UUID;
 
-
-
-
-@RegisterConstructorMapper(Course.class)
 public interface CourseRepository {
 
     @SqlUpdate("""
@@ -51,5 +46,12 @@ public interface CourseRepository {
     @SqlQuery("SELECT * FROM courses WHERE created_by_user_id = :userId")
     @RegisterBeanMapper(Course.class)
     List<Course> findCoursesByUserId(@Bind("userId") UUID userId);
+
+    @SqlQuery("SELECT * FROM courses WHERE id = :id")
+    @RegisterBeanMapper(Course.class)
+    Course getCourseById(@Bind("id") UUID id);
+
+    @SqlQuery("SELECT created_by_user_id FROM courses WHERE id = :id")
+    UUID getCreatedByUserIdByCourseId(@Bind("id") UUID id);
 
 }

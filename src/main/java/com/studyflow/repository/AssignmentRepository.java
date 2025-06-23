@@ -48,4 +48,8 @@ public interface AssignmentRepository {
 """)
     @RegisterBeanMapper(Assignment.class)
     List<Assignment> getAssignmentsByUserId(@Bind("userId") UUID userId);
+
+    @SqlQuery("SELECT * FROM assignments WHERE id = :id")
+    @RegisterBeanMapper(Assignment.class)
+    Assignment getAssignmentById(@Bind("id") UUID id);
 }
