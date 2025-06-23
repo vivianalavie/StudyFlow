@@ -67,6 +67,12 @@ public class SchedulerService {
         final List<UserStudyPreference> preferences = userStudyPreferenceService.getPreferencesByUser(userId)
             .stream().sorted(Comparator.comparingInt(UserStudyPreference::getPriority)).toList();
 
+        // Debug: User-Präferenzen ausgeben
+        System.out.println("[Scheduler][DEBUG] User-Präferenzen:");
+        for (UserStudyPreference pref : preferences) {
+            System.out.println("  - Typ: " + pref.getPreferenceType() + ", Priorität: " + pref.getPriority());
+        }
+
         // 3. Benötigte Lernzeit berechnen
         double requiredMinutes = course.getTotalWorkloadHours()
                 * ((double) assignment.getTotalAchievablePoints() / course.getTotalPoints())
@@ -81,6 +87,9 @@ public class SchedulerService {
         // 5. Blackout-Weekdays
         List<String> blackoutWeekdays = user.getBlackoutWeekdays();
 
+        // Debug: Blackout-Tage ausgeben
+        System.out.println("[Scheduler][DEBUG] Blackout-Weekdays: " + blackoutWeekdays);
+
         // 6. Slot-Berechnung und Scheduling
         LocalDate today = LocalDate.now();
         LocalDate deadline = assignment.getDeadline().toLocalDate();
@@ -88,22 +97,23 @@ public class SchedulerService {
         double minSessionLength = 15;
         double maxSessionLength = user.getMaxStudyDuration();
         double minutesLeft = requiredMinutes;
+        int pauseLength = 30;
 
+        // 1. Freie Slots pro Tag bestimmen (wie bisher)
         Map<LocalDate, List<TimeSlot>> freeSlotsPerDay = new HashMap<>();
         for (LocalDate date = today; !date.isAfter(deadline); date = date.plusDays(1)) {
-            // Blackout-Check
-            if (blackoutWeekdays != null && blackoutWeekdays.contains(date.getDayOfWeek().name())) continue;
-            // Tageslernfenster
+            if (blackoutWeekdays != null && blackoutWeekdays.contains(date.getDayOfWeek().name())) {
+                System.out.println("[Scheduler][DEBUG] Blackout-Day übersprungen: " + date + " (" + date.getDayOfWeek().name() + ")");
+                continue;
+            }
             LocalTime start = user.getStartLearningTime();
             LocalTime end = user.getEndLearningTime();
             List<TimeSlot> daySlots = new ArrayList<>();
             if (start.isBefore(end)) {
                 daySlots.add(new TimeSlot(date.atTime(start), date.atTime(end)));
             } else {
-                // Über Mitternacht (z.B. 22:00-02:00)
                 daySlots.add(new TimeSlot(date.atTime(start), date.plusDays(1).atTime(end)));
             }
-            // Blocker abziehen
             List<TimeSlot> blockers = new ArrayList<>();
             for (TimeBlocker tb : timeBlockers) {
                 if (!tb.getStartDate().toLocalDate().isAfter(date) && !tb.getEndDate().toLocalDate().isBefore(date)) {
@@ -117,64 +127,108 @@ public class SchedulerService {
                     blockers.add(new TimeSlot(ss.getStartTime().toLocalTime(), ss.getEndTime().toLocalTime(), date));
                 }
             }
-            // Gaps berechnen
             List<TimeSlot> free = subtractBlockers(daySlots, blockers);
             freeSlotsPerDay.put(date, free);
+            // Debug: Freie Slots pro Tag ausgeben
+            System.out.println("[Scheduler][DEBUG] Freie Slots am " + date + ":");
+            for (TimeSlot slot : free) {
+                System.out.println("  - " + slot.getStart() + " bis " + slot.getEnd());
+            }
         }
 
-        // 7. Slot-Scoring und Sessions platzieren
-        while (minutesLeft > 0) {
-            boolean anyPlaced = false;
-            for (LocalDate date = today; !date.isAfter(deadline); date = date.plusDays(1)) {
-                List<TimeSlot> slots = freeSlotsPerDay.getOrDefault(date, new ArrayList<>());
-                if (slots.isEmpty()) continue;
-                // Scoring
-                slots.sort((a, b) -> scoreSlot(b, preferences) - scoreSlot(a, preferences));
-                TimeSlot best = slots.get(0);
-                long slotMinutes = best.lengthInMinutes();
-                long sessionLength = (long) Math.min(Math.min(maxSessionLength, minutesLeft), slotMinutes);
-                if (sessionLength < minSessionLength) continue;
-                // Session anlegen
-                StudySession session = new StudySession();
-                session.setId(UUID.randomUUID());
-                session.setUserId(userId);
-                session.setStartTime(best.getStart());
-                session.setEndTime(best.getStart().plusMinutes(sessionLength));
-                session.setCreatedOn(LocalDateTime.now());
-                session.setToDoDescription(assignment.getTitle());
-                session.setAssignmentId(assignment.getId());
-                System.out.println("[Scheduler] Neue geplante Session: " + session);
-                studySessionService.createStudySession(session);
-                System.out.println("[Scheduler] Session gespeichert!");
-                minutesLeft -= sessionLength;
-                // Nach der Session eine halbe Stunde Pause als Blocker einplanen
-                LocalDateTime pauseStart = best.getStart().plusMinutes(sessionLength);
-                LocalDateTime pauseEnd = pauseStart.plusMinutes(30);
-                List<TimeSlot> neueSlots = new ArrayList<>();
-                for (TimeSlot slot : slots) {
-                    if (slot.equals(best)) {
-                        // Slot wird durch Session und Pause zerschnitten
-                        if (slot.getEnd().isAfter(pauseEnd)) {
-                            // Es bleibt nach Pause noch ein Slot übrig
-                            if (Duration.between(pauseEnd, slot.getEnd()).toMinutes() >= minSessionLength) {
-                                neueSlots.add(new TimeSlot(pauseEnd, slot.getEnd()));
-                            }
-                        }
-                        if (slot.getStart().isBefore(best.getStart())) {
-                            // Es bleibt vor der Session noch ein Slot übrig
-                            if (Duration.between(slot.getStart(), best.getStart()).toMinutes() >= minSessionLength) {
-                                neueSlots.add(new TimeSlot(slot.getStart(), best.getStart()));
-                            }
-                        }
-                    } else {
-                        neueSlots.add(slot);
+        // 2. Subslots erzeugen und sammeln
+        class ScoredSubslot {
+            TimeSlot slot;
+            LocalDate date;
+            int score;
+            ScoredSubslot(TimeSlot slot, LocalDate date, int score) {
+                this.slot = slot;
+                this.date = date;
+                this.score = score;
+            }
+        }
+        List<ScoredSubslot> allSubslots = new ArrayList<>();
+        for (Map.Entry<LocalDate, List<TimeSlot>> entry : freeSlotsPerDay.entrySet()) {
+            LocalDate date = entry.getKey();
+            for (TimeSlot slot : entry.getValue()) {
+                LocalDateTime slotStart = slot.getStart();
+                LocalDateTime slotEnd = slot.getEnd();
+                long totalMinutes = Duration.between(slotStart, slotEnd).toMinutes();
+                long subslotLength = (long) maxSessionLength;
+                long step = subslotLength + pauseLength;
+                List<TimeSlot> subslotsOfThisSlot = new ArrayList<>();
+                for (long offset = 0; offset + subslotLength <= totalMinutes; offset += step) {
+                    LocalDateTime subStart = slotStart.plusMinutes(offset);
+                    LocalDateTime subEnd = subStart.plusMinutes(subslotLength);
+                    if (subEnd.isAfter(slotEnd)) break;
+                    TimeSlot subslot = new TimeSlot(subStart, subEnd);
+                    int score = scoreSlot(subslot, preferences);
+                    System.out.println("[Scheduler][DEBUG] Subslot: " + subStart + " bis " + subEnd + " (" + Duration.between(subStart, subEnd).toMinutes() + "min), Score: " + score);
+                    allSubslots.add(new ScoredSubslot(subslot, date, score));
+                    subslotsOfThisSlot.add(subslot);
+                }
+                // Erweiterung: Prüfe, ob am Ende noch ein Subslot ohne Pause reinpasst
+                long lastPossibleStartMinutes = totalMinutes - subslotLength;
+                if (lastPossibleStartMinutes >= 0) {
+                    LocalDateTime lastSubStart = slotStart.plusMinutes(lastPossibleStartMinutes);
+                    LocalDateTime lastSubEnd = lastSubStart.plusMinutes(subslotLength);
+                    // Prüfe, ob dieser Subslot sich nicht mit dem letzten überschneidet
+                    boolean overlaps = subslotsOfThisSlot.stream().anyMatch(s -> !s.getEnd().isBefore(lastSubStart));
+                    if (!overlaps && !lastSubEnd.isAfter(slotEnd)) {
+                        TimeSlot subslot = new TimeSlot(lastSubStart, lastSubEnd);
+                        int score = scoreSlot(subslot, preferences);
+                        System.out.println("[Scheduler][DEBUG] End-Subslot (ohne Pause): " + lastSubStart + " bis " + lastSubEnd + " (" + Duration.between(lastSubStart, lastSubEnd).toMinutes() + "min), Score: " + score);
+                        allSubslots.add(new ScoredSubslot(subslot, date, score));
                     }
                 }
-                freeSlotsPerDay.put(date, neueSlots);
-                anyPlaced = true;
-                if (minutesLeft <= 0) break;
             }
-            if (!anyPlaced) break; // Keine passenden Slots mehr
+        }
+
+        // 3. Subslots nach Score und Präferenz sortieren
+        allSubslots.sort((a, b) -> {
+            int scoreDiff = b.score - a.score;
+            if (scoreDiff != 0) return scoreDiff;
+            if (!preferences.isEmpty()) {
+                UserStudyPreference.PreferenceType topPref = preferences.get(0).getPreferenceType();
+                int prefHour = switch (topPref) {
+                    case MORNING -> 8;
+                    case AFTERNOON -> 14;
+                    case EVENING -> 19;
+                    case NIGHT -> 25;
+                };
+                int aDist = Math.abs(a.slot.getStart().getHour() - prefHour);
+                int bDist = Math.abs(b.slot.getStart().getHour() - prefHour);
+                if (aDist != bDist) return aDist - bDist;
+            }
+            // NEU: Bei gleichem Score und Präferenznähe nach Startzeit sortieren (frühestes Datum zuerst)
+            return a.slot.getStart().compareTo(b.slot.getStart());
+        });
+
+        // 4. Sessions in die besten Subslots einplanen
+        Set<LocalDateTime> usedTimes = new HashSet<>();
+        for (ScoredSubslot sub : allSubslots) {
+            if (minutesLeft <= 0) break;
+            boolean overlaps = usedTimes.stream().anyMatch(t ->
+                !(sub.slot.getEnd().isBefore(t) || sub.slot.getStart().isAfter(t.plusMinutes((long) maxSessionLength + pauseLength - 1)))
+            );
+            if (overlaps) {
+                System.out.println("[Scheduler][DEBUG] Subslot übersprungen (Overlap): " + sub.slot.getStart() + " bis " + sub.slot.getEnd());
+                continue;
+            }
+            // Session anlegen
+            System.out.println("[Scheduler][DEBUG] Session gesetzt: " + sub.slot.getStart() + " bis " + sub.slot.getEnd());
+            StudySession session = new StudySession();
+            session.setId(UUID.randomUUID());
+            session.setUserId(userId);
+            session.setStartTime(sub.slot.getStart());
+            session.setEndTime(sub.slot.getEnd());
+            session.setCreatedOn(LocalDateTime.now());
+            session.setToDoDescription(assignment.getTitle());
+            session.setAssignmentId(assignment.getId());
+            studySessionService.createStudySession(session);
+            minutesLeft -= maxSessionLength;
+            // Blockiere diesen Zeitraum inkl. Pause
+            usedTimes.add(sub.slot.getStart());
         }
         // 8. Speichern
         for (StudySession s : sessionsToSave) {
@@ -223,6 +277,8 @@ public class SchedulerService {
 
     // Slot-Scoring nach Präferenz
     private int scoreSlot(TimeSlot slot, List<UserStudyPreference> preferences) {
+        // Hinweis: Ein User kann maximal zwei Präferenzen haben (z.B. MORNING und EVENING).
+        // Die Score-Vergabe ist darauf ausgelegt: 100 für die Top-Präferenz, 90 für die zweite.
         // Zeitbereiche für Präferenzen
         Map<UserStudyPreference.PreferenceType, int[]> prefRanges = Map.of(
                 UserStudyPreference.PreferenceType.MORNING, new int[]{5, 12},
@@ -230,18 +286,19 @@ public class SchedulerService {
                 UserStudyPreference.PreferenceType.EVENING, new int[]{17, 23},
                 UserStudyPreference.PreferenceType.NIGHT, new int[]{23, 29} // 29 = 5 Uhr am Folgetag
         );
-        int[] slotRange = {slot.getStart().getHour(), slot.getEnd().getHour()};
+        int slotStart = slot.getStart().getHour();
+        int slotEnd = slot.getEnd().getHour();
         int bestScore = 0;
         for (int i = 0; i < preferences.size(); i++) {
             UserStudyPreference.PreferenceType type = preferences.get(i).getPreferenceType();
             int[] range = prefRanges.get(type);
-            int overlap = Math.max(0, Math.min(slotRange[1], range[1]) - Math.max(slotRange[0], range[0]));
-            int slotLen = slotRange[1] - slotRange[0];
+            int overlap = Math.max(0, Math.min(slotEnd, range[1]) - Math.max(slotStart, range[0]));
+            int slotLen = slotEnd - slotStart;
             double percent = slotLen > 0 ? (double) overlap / slotLen : 0;
             if (percent > 0.5) {
-                bestScore = Math.max(bestScore, 2 - i); // 2 für erste Präferenz, 1 für zweite
+                bestScore = Math.max(bestScore, 100 - i * 10); // 100 für Top-Präferenz, 90 für zweite usw.
             } else if (percent > 0) {
-                bestScore = Math.max(bestScore, 1 - i); // 1 für zweite Präferenz
+                bestScore = Math.max(bestScore, 50 - i * 10); // 50 für Teilüberlappung
             }
         }
         return bestScore;
