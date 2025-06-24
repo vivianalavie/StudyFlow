@@ -102,6 +102,7 @@
         </dependency>
 
         <!-- Clerk for auth (before it was 2.3.1)-->
+        <!-- Clerk for auth (before it was 2.3.1)-->
         <dependency>
             <groupId>com.clerk</groupId>
             <artifactId>backend-api</artifactId>
