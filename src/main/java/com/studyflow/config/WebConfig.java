@@ -29,7 +29,8 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addMapping("/api/**")
                 .allowedOrigins(
                     "http://localhost:3000",
-                    "https://studyflow.fly.dev"
+                    "https://studyflow.fly.dev",
+                    "https://www.studyflow.work"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
