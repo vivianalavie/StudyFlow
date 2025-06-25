@@ -22,8 +22,11 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**") // passe ggf. den Pfad an
-                .allowedOrigins("http://localhost:3000")
+        registry.addMapping("/api/**")
+                .allowedOrigins(
+                    "http://localhost:3000",
+                    "https://studyflow.fly.dev"
+                )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                 .allowedHeaders("*")
                 .allowCredentials(true);
