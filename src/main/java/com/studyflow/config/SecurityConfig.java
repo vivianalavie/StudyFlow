@@ -18,15 +18,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // <- Verhindert CSRF-Schutz bei REST (wichtig für POST)
                 .sessionManagement(sess -> sess.sessionCreationPolicy(STATELESS)) // <- Kein Session-Tracking nötig
                 .authorizeHttpRequests(auth -> auth
+                        // ❗ Preflight OPTIONS-Requests für alle Pfade explizit erlauben!
+                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
+
                         // Swagger-UI & OpenAPI für alle freigeben
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
-
-                        // ❗ Preflight OPTIONS-Requests unbedingt zulassen!
-                        .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
                         // Authentifizierung für eigene API
                         .requestMatchers("/api/**").authenticated()
