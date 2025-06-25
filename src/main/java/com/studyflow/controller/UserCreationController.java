@@ -2,6 +2,7 @@ package com.studyflow.controller;
 
 import com.studyflow.auth.CurrentUser;
 import com.studyflow.model.user.UserCreation;
+import com.studyflow.model.user.UserPreferences;
 import com.studyflow.service.UserCreationService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,5 +30,16 @@ public class UserCreationController {
         return ResponseEntity.ok(exists);
     }
 
+    @GetMapping("/preferences")
+    public ResponseEntity<UserPreferences> getUserPreferences(@CurrentUser String clerkUserId) {
+        UserPreferences preferences = userCreationService.getUserPreferences(clerkUserId);
+        return ResponseEntity.ok(preferences);
+    }
+
+    @PutMapping("/preferences")
+    public ResponseEntity<Void> updateUserPreferences(@RequestBody UserPreferences preferences, @CurrentUser String clerkUserId) {
+        userCreationService.updateUserPreferences(preferences, clerkUserId);
+        return ResponseEntity.ok().build();
+    }
 
 }
