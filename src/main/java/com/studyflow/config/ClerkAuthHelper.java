@@ -10,7 +10,16 @@ import java.util.*;
 
 public class ClerkAuthHelper {
 
-    private static final Dotenv dotenv = Dotenv.load();
+    private static final String CLERK_TOKEN;
+    static {
+        String token = null;
+        try {
+            token = io.github.cdimascio.dotenv.Dotenv.load().get("CLERK_TOKEN");
+        } catch (Exception e) {
+            token = System.getenv("CLERK_TOKEN");
+        }
+        CLERK_TOKEN = token;
+    }
 
     public static RequestState verifyRequest(HttpServletRequest request) {
         Map<String, List<String>> headers = extractHeaders(request);
@@ -18,7 +27,7 @@ public class ClerkAuthHelper {
         return AuthenticateRequest.authenticateRequest(
                 headers,
                 AuthenticateRequestOptions
-                        .secretKey(dotenv.get("CLERK_TOKEN"))
+                        .secretKey(CLERK_TOKEN)
                         .build()
         );
     }

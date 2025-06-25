@@ -16,7 +16,16 @@ import java.util.*;
 @Component
 public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolver {
 
-    private static final Dotenv dotenv = Dotenv.load();
+    private static final String CLERK_TOKEN;
+    static {
+        String token = null;
+        try {
+            token = io.github.cdimascio.dotenv.Dotenv.load().get("CLERK_TOKEN");
+        } catch (Exception e) {
+            token = System.getenv("CLERK_TOKEN");
+        }
+        CLERK_TOKEN = token;
+    }
 
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
@@ -46,7 +55,7 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
         RequestState state = AuthenticateRequest.authenticateRequest(
                 headers,
                 AuthenticateRequestOptions
-                        .secretKey(dotenv.get("CLERK_TOKEN")) //Eigentlich CLERK_TOKEN --
+                        .secretKey(CLERK_TOKEN)
                         .build()
         );
 
