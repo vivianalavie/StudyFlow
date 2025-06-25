@@ -1,10 +1,12 @@
 package com.studyflow.service;
 
 import com.studyflow.model.user.UserCreation;
+import com.studyflow.model.user.UserPreferences;
 import com.studyflow.repository.UserCreationRepository;
 import org.jdbi.v3.core.Jdbi;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserCreationService {
@@ -32,5 +34,29 @@ public class UserCreationService {
         );
     }
 
+    public UUID getUserIdByClerkId(String clerkUserId) {
+        return jdbi.withExtension(UserCreationRepository.class, repo ->
+            repo.findUserIdByClerkUserId(clerkUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found for clerk ID: " + clerkUserId))
+        );
+    }
+
+    public UserPreferences getUserPreferences(String clerkUserId) {
+        return jdbi.withExtension(UserCreationRepository.class, repo ->
+            repo.getUserPreferencesByClerkUserId(clerkUserId)
+                .orElseThrow(() -> new IllegalArgumentException("User preferences not found for clerk ID: " + clerkUserId))
+        );
+    }
+
+    public void updateUserPreferences(UserPreferences preferences, String clerkUserId) {
+        try {
+            jdbi.useExtension(UserCreationRepository.class, repo ->
+                repo.updateUserPreferences(preferences, clerkUserId)
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException("Fehler beim Aktualisieren der User-Präferenzen", e);
+        }
+    }
 
 }

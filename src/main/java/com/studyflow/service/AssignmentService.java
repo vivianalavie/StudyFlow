@@ -2,6 +2,7 @@ package com.studyflow.service;
 
 import com.studyflow.model.assignment.Assignment;
 import com.studyflow.repository.AssignmentRepository;
+import com.studyflow.repository.UserCreationRepository;
 import org.jdbi.v3.core.Jdbi;
 import org.springframework.stereotype.Service;
 
@@ -36,6 +37,13 @@ public class AssignmentService {
 
     public List<Assignment> getAssignmentsByUser(UUID userId) {
         return jdbi.withExtension(AssignmentRepository.class, repo -> repo.getAssignmentsByUserId(userId));
+    }
+
+    public UUID getUserIdByClerkId(String clerkUserId) {
+        return jdbi.withExtension(UserCreationRepository.class, repo ->
+                repo.findUserIdByClerkUserId(clerkUserId)
+                        .orElseThrow(() -> new IllegalArgumentException("User not found for clerk ID: " + clerkUserId))
+        );
     }
 
 }

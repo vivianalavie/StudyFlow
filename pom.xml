@@ -102,6 +102,7 @@
         </dependency>
 
         <!-- Clerk for auth (before it was 2.3.1)-->
+        <!-- Clerk for auth (before it was 2.3.1)-->
         <dependency>
             <groupId>com.clerk</groupId>
             <artifactId>backend-api</artifactId>
@@ -117,6 +118,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
 
