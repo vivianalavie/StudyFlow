@@ -20,9 +20,9 @@ public class CurrentUserArgumentResolver implements HandlerMethodArgumentResolve
     static {
         String token = null;
         try {
-            token = io.github.cdimascio.dotenv.Dotenv.load().get("CLERK_TOKEN");
+            token = io.github.cdimascio.dotenv.Dotenv.load().get("CLERK_SECRET_KEY");
         } catch (Exception e) {
-            token = System.getenv("CLERK_TOKEN");
+            token = System.getenv("CLERK_SECRET_KEY");
         }
         CLERK_TOKEN = token;
     }
