@@ -43,11 +43,17 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleException(Exception ex) {
-        log.error("An unexpected error occurred.");
-        log.error(ex.getMessage());
+        log.error("An unexpected error occurred.", ex);
+        if (ex instanceof org.springframework.security.access.AccessDeniedException) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Access denied: " + ex.getMessage());
+        }
+        if (ex instanceof org.springframework.security.authentication.AuthenticationCredentialsNotFoundException ||
+            ex instanceof org.springframework.security.core.AuthenticationException) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized: " + ex.getMessage());
+        }
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("An unexpected error occurred.");
+                .body("An unexpected error occurred: " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
     }
 
 }
