@@ -16,7 +16,7 @@ public interface UserStudyPreferenceRepository {
         INSERT INTO user_study_preferences (
             id, user_id, preference_type, priority, created_at
         ) VALUES (
-            :id, :userId, :preferenceType, :priority, :createdAt
+            :id, :userId, :preferenceType::study_time_preference, :priority, :createdAt
         )
     """)
     void insertUserStudyPreference(@BindBean UserStudyPreference preference);
