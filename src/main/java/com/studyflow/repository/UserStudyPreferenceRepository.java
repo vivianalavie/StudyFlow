@@ -23,4 +23,7 @@ public interface UserStudyPreferenceRepository {
 
     @SqlQuery("SELECT * FROM user_study_preferences WHERE user_id = :userId ORDER BY priority ASC")
     List<UserStudyPreference> getPreferencesByUser(@Bind("userId") UUID userId);
+
+    @SqlUpdate("DELETE FROM user_study_preferences WHERE user_id = :userId")
+    void deletePreferencesByUser(@Bind("userId") UUID userId);
 } 
