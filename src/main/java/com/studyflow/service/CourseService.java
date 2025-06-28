@@ -24,8 +24,7 @@ public class CourseService {
             course.setCreatedBy(userId);
             jdbi.useExtension(CourseRepository.class, repo -> repo.insertCourse(course));
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Fehler beim Erstellen des Kurses", e);
+            throw new RuntimeException("Error while creating course", e);
         }
     }
 
@@ -37,7 +36,7 @@ public class CourseService {
                 repo.updateCourse(course);
             });
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error while updating course", e);
         }
     }
 
@@ -45,8 +44,6 @@ public class CourseService {
         try {
             jdbi.useExtension(CourseRepository.class, repo -> repo.deleteCourseById(id));
         } catch (Exception e) {
-            System.err.println("Error while deleting course: " + e.getMessage());
-            e.printStackTrace();
             throw new RuntimeException("Error while deleting course", e);
         }
     }

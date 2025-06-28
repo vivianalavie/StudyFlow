@@ -14,27 +14,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(Customizer.withDefaults()) // <- Wichtig: erlaubt Verwendung deiner WebConfig-CORS
-                .csrf(csrf -> csrf.disable()) // <- Verhindert CSRF-Schutz bei REST (wichtig für POST)
-                .sessionManagement(sess -> sess.sessionCreationPolicy(STATELESS)) // <- Kein Session-Tracking nötig
+                .cors(Customizer.withDefaults()) // <- Important: allows usage of your WebConfig-CORS
+                .csrf(csrf -> csrf.disable()) // <- Prevents CSRF protection for REST (important for POST)
+                .sessionManagement(sess -> sess.sessionCreationPolicy(STATELESS)) // <- No session tracking needed
                 .authorizeHttpRequests(auth -> auth
-                        // ❗ Preflight OPTIONS-Requests für alle Pfade explizit erlauben!
+                        // ❗ Explicitly allow preflight OPTIONS requests for all paths!
                         .requestMatchers(org.springframework.http.HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // Swagger-UI & OpenAPI für alle freigeben
+                        // Allow Swagger-UI & OpenAPI for everyone
                         .requestMatchers(
                                 "/v3/api-docs/**",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html"
                         ).permitAll()
 
-                        // Authentifizierung für eigene API
+                        // Authentication for own API
                         .requestMatchers("/api/**").authenticated()
 
-                        // Rest blockieren
+                        // Block everything else
                         .anyRequest().denyAll()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults())); // ← JWT-Verifizierung
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults())); // ← JWT verification
 
         return http.build();
     }
