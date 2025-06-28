@@ -74,7 +74,7 @@ public class SchedulerService {
         }
 
         // 3. Benötigte Lernzeit berechnen
-        double requiredMinutes = course.getTotalWorkloadHours()
+        double requiredMinutes = course.getTotalSelfWorkHours()
                 * ((double) assignment.getTotalAchievablePoints() / course.getTotalPoints())
                 * assignment.getDifficulty().getMultiplier() * 60;
 
