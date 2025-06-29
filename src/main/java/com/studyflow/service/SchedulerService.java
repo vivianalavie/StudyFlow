@@ -36,61 +36,40 @@ public class SchedulerService {
     }
 
     public void generateScheduleForAssignment(UUID assignmentId) {
-        // Bereits existierende StudySessions für dieses Assignment löschen
+        // Delete existing StudySessions for this assignment
         studySessionService.deleteStudySessionsByAssignment(assignmentId);
-        // 1. Assignment, Course und User laden
+        // 1. Load Assignment, Course and User
         Assignment assignment = jdbi.withExtension(AssignmentRepository.class, repo ->
                 repo.getAssignmentById(assignmentId)
         );
         Course course = jdbi.withExtension(CourseRepository.class, repo ->
                 repo.getCourseById(assignment.getCourseId())
         );
-        System.out.println("[Scheduler] Kurs-ID: " + course.getId());
-        System.out.println("[Scheduler] Ersteller (createdBy): " + course.getCreatedBy());
-        System.out.println("[Scheduler] Name: " + course.getName());
-        System.out.println("[Scheduler] Beschreibung: " + course.getDescription());
-        System.out.println("[Scheduler] Startdatum: " + course.getStartDate());
-        System.out.println("[Scheduler] Enddatum: " + course.getEndDate());
-        System.out.println("[Scheduler] Professor: " + course.getProfessorName());
-        System.out.println("[Scheduler] Gesamtpunkte: " + course.getTotalPoints());
-        System.out.println("[Scheduler] Gesamtarbeitsstunden: " + course.getTotalWorkloadHours());
-        System.out.println("[Scheduler] Selbstlern-Stunden: " + course.getTotalSelfWorkHours());
-        System.out.println("[Scheduler] Farbe: " + course.getColor());
         UUID userId = jdbi.withExtension(CourseRepository.class, repo ->
             repo.getCreatedByUserIdByCourseId(course.getId())
         );
-        System.out.println("[Scheduler] UserId (created_by_user_id): " + userId);
         UserCreation user = getUserById(userId);
-        // TODO: UserCreation korrekt laden (z.B. über userId)
+        // TODO: Load UserCreation correctly (e.g. via userId)
 
-        // 2. User-Präferenzen laden
+        // 2. Load user preferences
         final List<UserStudyPreference> preferences = userStudyPreferenceService.getPreferencesByUser(userId)
             .stream().sorted(Comparator.comparingInt(UserStudyPreference::getPriority)).toList();
 
-        // Debug: User-Präferenzen ausgeben
-        System.out.println("[Scheduler][DEBUG] User-Präferenzen:");
-        for (UserStudyPreference pref : preferences) {
-            System.out.println("  - Typ: " + pref.getPreferenceType() + ", Priorität: " + pref.getPriority());
-        }
-
-        // 3. Benötigte Lernzeit berechnen
+        // 3. Calculate required study time
         double requiredMinutes = course.getTotalSelfWorkHours()
                 * ((double) assignment.getTotalAchievablePoints() / course.getTotalPoints())
                 * assignment.getDifficulty().getMultiplier() * 60;
 
-        // 4. Blockierte Zeitfenster sammeln
+        // 4. Collect blocked time windows
         List<TimeBlocker> timeBlockers = jdbi.withExtension(TimeBlockerRepository.class, repo ->
                 repo.getTimeBlockersByUser(userId)
         );
         List<StudySession> existingSessions = studySessionService.getStudySessionsByUser(userId);
 
-        // 5. Blackout-Weekdays
+        // 5. Blackout weekdays
         List<String> blackoutWeekdays = user.getBlackoutWeekdays();
 
-        // Debug: Blackout-Tage ausgeben
-        System.out.println("[Scheduler][DEBUG] Blackout-Weekdays: " + blackoutWeekdays);
-
-        // 6. Slot-Berechnung und Scheduling
+        // 6. Slot calculation and scheduling
         LocalDate today = LocalDate.now();
         LocalDate deadline = assignment.getDeadline().toLocalDate();
         List<StudySession> sessionsToSave = new ArrayList<>();
@@ -99,11 +78,10 @@ public class SchedulerService {
         double minutesLeft = requiredMinutes;
         int pauseLength = 30;
 
-        // 1. Freie Slots pro Tag bestimmen (wie bisher)
+        // 1. Determine free slots per day (as before)
         Map<LocalDate, List<TimeSlot>> freeSlotsPerDay = new HashMap<>();
         for (LocalDate date = today; !date.isAfter(deadline); date = date.plusDays(1)) {
             if (blackoutWeekdays != null && blackoutWeekdays.contains(date.getDayOfWeek().name())) {
-                System.out.println("[Scheduler][DEBUG] Blackout-Day übersprungen: " + date + " (" + date.getDayOfWeek().name() + ")");
                 continue;
             }
             LocalTime start = user.getStartLearningTime();
@@ -129,14 +107,9 @@ public class SchedulerService {
             }
             List<TimeSlot> free = subtractBlockers(daySlots, blockers);
             freeSlotsPerDay.put(date, free);
-            // Debug: Freie Slots pro Tag ausgeben
-            System.out.println("[Scheduler][DEBUG] Freie Slots am " + date + ":");
-            for (TimeSlot slot : free) {
-                System.out.println("  - " + slot.getStart() + " bis " + slot.getEnd());
-            }
         }
 
-        // 2. Subslots erzeugen und sammeln
+        // 2. Create and collect subslots
         class ScoredSubslot {
             TimeSlot slot;
             LocalDate date;
@@ -150,9 +123,8 @@ public class SchedulerService {
         List<ScoredSubslot> allSubslots = new ArrayList<>();
         for (Map.Entry<LocalDate, List<TimeSlot>> entry : freeSlotsPerDay.entrySet()) {
             LocalDate date = entry.getKey();
-            // Prüfe, ob der Tag ein Blackout-Tag ist
+            // Check if the day is a blackout day
             if (blackoutWeekdays != null && blackoutWeekdays.contains(date.getDayOfWeek().name().toLowerCase())) {
-                System.out.println("[Scheduler][DEBUG] Blackout-Day übersprungen (Subslot-Erzeugung): " + date + " (" + date.getDayOfWeek().name() + ")");
                 continue;
             }
             for (TimeSlot slot : entry.getValue()) {
@@ -168,28 +140,26 @@ public class SchedulerService {
                     if (subEnd.isAfter(slotEnd)) break;
                     TimeSlot subslot = new TimeSlot(subStart, subEnd);
                     int score = scoreSlot(subslot, preferences);
-                    System.out.println("[Scheduler][DEBUG] Subslot: " + subStart + " bis " + subEnd + " (" + Duration.between(subStart, subEnd).toMinutes() + "min), Score: " + score);
                     allSubslots.add(new ScoredSubslot(subslot, date, score));
                     subslotsOfThisSlot.add(subslot);
                 }
-                // Erweiterung: Prüfe, ob am Ende noch ein Subslot ohne Pause reinpasst
+                // Extension: Check if another subslot without pause fits at the end
                 long lastPossibleStartMinutes = totalMinutes - subslotLength;
                 if (lastPossibleStartMinutes >= 0) {
                     LocalDateTime lastSubStart = slotStart.plusMinutes(lastPossibleStartMinutes);
                     LocalDateTime lastSubEnd = lastSubStart.plusMinutes(subslotLength);
-                    // Prüfe, ob dieser Subslot sich nicht mit dem letzten überschneidet
+                    // Check if this subslot doesn't overlap with the last one
                     boolean overlaps = subslotsOfThisSlot.stream().anyMatch(s -> !s.getEnd().isBefore(lastSubStart));
                     if (!overlaps && !lastSubEnd.isAfter(slotEnd)) {
                         TimeSlot subslot = new TimeSlot(lastSubStart, lastSubEnd);
                         int score = scoreSlot(subslot, preferences);
-                        System.out.println("[Scheduler][DEBUG] End-Subslot (ohne Pause): " + lastSubStart + " bis " + lastSubEnd + " (" + Duration.between(lastSubStart, lastSubEnd).toMinutes() + "min), Score: " + score);
                         allSubslots.add(new ScoredSubslot(subslot, date, score));
                     }
                 }
             }
         }
 
-        // 3. Subslots nach Score und Präferenz sortieren
+        // 3. Sort subslots by score and preference
         allSubslots.sort((a, b) -> {
             int scoreDiff = b.score - a.score;
             if (scoreDiff != 0) return scoreDiff;
@@ -205,11 +175,11 @@ public class SchedulerService {
                 int bDist = Math.abs(b.slot.getStart().getHour() - prefHour);
                 if (aDist != bDist) return aDist - bDist;
             }
-            // NEU: Bei gleichem Score und Präferenznähe nach Startzeit sortieren (frühestes Datum zuerst)
+            // NEW: Sort by start time when score and preference proximity are equal (earliest date first)
             return a.slot.getStart().compareTo(b.slot.getStart());
         });
 
-        // 4. Sessions in die besten Subslots einplanen
+        // 4. Schedule sessions in the best subslots
         Set<LocalDateTime> usedTimes = new HashSet<>();
         for (ScoredSubslot sub : allSubslots) {
             if (minutesLeft <= 0) break;
@@ -217,11 +187,9 @@ public class SchedulerService {
                 !(sub.slot.getEnd().isBefore(t) || sub.slot.getStart().isAfter(t.plusMinutes((long) maxSessionLength + pauseLength - 1)))
             );
             if (overlaps) {
-                System.out.println("[Scheduler][DEBUG] Subslot übersprungen (Overlap): " + sub.slot.getStart() + " bis " + sub.slot.getEnd());
                 continue;
             }
-            // Session anlegen
-            System.out.println("[Scheduler][DEBUG] Session gesetzt: " + sub.slot.getStart() + " bis " + sub.slot.getEnd());
+            // Create session
             StudySession session = new StudySession();
             session.setId(UUID.randomUUID());
             session.setUserId(userId);
@@ -232,16 +200,16 @@ public class SchedulerService {
             session.setAssignmentId(assignment.getId());
             studySessionService.createStudySession(session);
             minutesLeft -= maxSessionLength;
-            // Blockiere diesen Zeitraum inkl. Pause
+            // Block this time period including pause
             usedTimes.add(sub.slot.getStart());
         }
-        // 8. Speichern
+        // 8. Save
         for (StudySession s : sessionsToSave) {
             studySessionService.createStudySession(s);
         }
     }
 
-    // Hilfsklasse für TimeSlot (ohne Zeitzone)
+    // Helper class for TimeSlot (without timezone)
     public static class TimeSlot {
         private final LocalDateTime start;
         private final LocalDateTime end;
@@ -258,7 +226,7 @@ public class SchedulerService {
         public long lengthInMinutes() { return java.time.Duration.between(start, end).toMinutes(); }
     }
 
-    // Blocker von Slots abziehen (vereinfachte Logik)
+    // Subtract blockers from slots (simplified logic)
     private List<TimeSlot> subtractBlockers(List<TimeSlot> slots, List<TimeSlot> blockers) {
         List<TimeSlot> result = new ArrayList<>(slots);
         for (TimeSlot blocker : blockers) {
@@ -280,16 +248,16 @@ public class SchedulerService {
         return result;
     }
 
-    // Slot-Scoring nach Präferenz
+    // Slot scoring by preference
     private int scoreSlot(TimeSlot slot, List<UserStudyPreference> preferences) {
-        // Hinweis: Ein User kann maximal zwei Präferenzen haben (z.B. MORNING und EVENING).
-        // Die Score-Vergabe ist darauf ausgelegt: 100 für die Top-Präferenz, 90 für die zweite.
-        // Zeitbereiche für Präferenzen
+        // Note: A user can have a maximum of two preferences (e.g. MORNING and EVENING).
+        // The score assignment is designed for this: 100 for top preference, 90 for second.
+        // Time ranges for preferences
         Map<UserStudyPreference.PreferenceType, int[]> prefRanges = Map.of(
                 UserStudyPreference.PreferenceType.MORNING, new int[]{5, 12},
                 UserStudyPreference.PreferenceType.AFTERNOON, new int[]{12, 17},
                 UserStudyPreference.PreferenceType.EVENING, new int[]{17, 23},
-                UserStudyPreference.PreferenceType.NIGHT, new int[]{23, 29} // 29 = 5 Uhr am Folgetag
+                UserStudyPreference.PreferenceType.NIGHT, new int[]{23, 29} // 29 = 5 AM next day
         );
         int slotStart = slot.getStart().getHour();
         int slotEnd = slot.getEnd().getHour();
@@ -301,20 +269,20 @@ public class SchedulerService {
             int slotLen = slotEnd - slotStart;
             double percent = slotLen > 0 ? (double) overlap / slotLen : 0;
             if (percent > 0.5) {
-                bestScore = Math.max(bestScore, 100 - i * 10); // 100 für Top-Präferenz, 90 für zweite usw.
+                bestScore = Math.max(bestScore, 100 - i * 10); // 100 for top preference, 90 for second, etc.
             } else if (percent > 0) {
-                bestScore = Math.max(bestScore, 50 - i * 10); // 50 für Teilüberlappung
+                bestScore = Math.max(bestScore, 50 - i * 10); // 50 for partial overlap
             }
         }
         return bestScore;
     }
 
-    // Hilfsmethode, um UserCreation anhand der userId zu laden
+    // Helper method to load UserCreation by userId
     private UserCreation getUserById(UUID userId) {
         return jdbi.withExtension(UserCreationRepository.class, repo -> repo.getUserById(userId));
     }
 
-    // Dummy-Enums und Klassen für Präferenzen
+    // Dummy enums and classes for preferences
     public enum PreferenceType { MORNING, AFTERNOON, EVENING, NIGHT }
     public static class Preference {
         public PreferenceType type;

@@ -23,8 +23,7 @@ public class UserCreationService {
                     repo.insertUser(user, clerkUserId)
             );
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Fehler beim Anlegen des Users", e);
+            throw new RuntimeException("Error while creating user", e);
         }
     }
 
@@ -54,8 +53,7 @@ public class UserCreationService {
                 repo.updateUserPreferences(preferences, clerkUserId)
             );
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException("Fehler beim Aktualisieren der User-Präferenzen", e);
+            throw new RuntimeException("Error while updating user preferences", e);
         }
     }
 

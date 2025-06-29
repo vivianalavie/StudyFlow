@@ -11,7 +11,7 @@ public class ClerkService {
         try {
             token = io.github.cdimascio.dotenv.Dotenv.load().get("CLERK_TOKEN");
         } catch (Exception e) {
-            // Dotenv nicht gefunden, auf Umgebungsvariable zurückgreifen
+            // Dotenv not found, fall back to environment variable
             token = System.getenv("CLERK_TOKEN");
         }
         CLERK_TOKEN = token;
